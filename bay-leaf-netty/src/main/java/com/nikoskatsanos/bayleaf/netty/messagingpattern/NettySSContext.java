@@ -9,6 +9,7 @@ import com.nikoskatsanos.bayleaf.core.messagingpattern.SSContext;
 import com.nikoskatsanos.bayleaf.core.messagingpattern.SharedSubscription;
 import com.nikoskatsanos.bayleaf.core.messagingpattern.SharedSubscriptionData;
 import com.nikoskatsanos.bayleaf.netty.codec.NettyJsonCodec;
+import com.nikoskatsanos.bayleaf.netty.dispatch.DispatchingStrategy.Dispatcher;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import java.util.HashMap;
@@ -23,24 +24,25 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
+@RequiredArgsConstructor
 @Slf4j
 public class NettySSContext<SUBSCRIPTION, DATA> implements SSContext<SUBSCRIPTION, DATA> {
 
     private static final NettyJsonCodec NETTY_JSON_CODEC = NettyJsonCodec.instance();
 
-    @Setter
-    private Session session;
-    @Setter
-    private String serviceName;
-    @Setter
-    private String route;
+    private final Session session;
+    private final String serviceName;
+    private final String route;
+
+    private final ChannelHandlerContext channelCtx;
+
+    private final Dispatcher dispatcher;
+
     @Setter
     private BayLeafCodec.Serializer serializer;
     @Setter
     private BayLeafCodec.Deserializer deserializer;
 
-    @Setter
-    private ChannelHandlerContext channelCtx;
 
     private volatile Consumer<SharedSubscription<SUBSCRIPTION>> subscriptionConsumer;
     private volatile Consumer<SharedSubscription<SUBSCRIPTION>> closeConsumer;
@@ -73,7 +75,7 @@ public class NettySSContext<SUBSCRIPTION, DATA> implements SSContext<SUBSCRIPTIO
         final NettyStreamContext<SUBSCRIPTION, DATA> sharedStreamContext = NettyStreamContext.create(subscription, this.serviceName, this.route, this.serializer);
         sharedStreamContext.addChannelContext(appMsg.getCorrelationId(), this.channelCtx);
         if (Objects.nonNull(this.subscriptionConsumer)) {
-            this.subscriptionConsumer.accept(sharedSubscription);
+            this.dispatcher.dispatch(() -> this.subscriptionConsumer.accept(sharedSubscription));
         }
     }
 
@@ -97,7 +99,7 @@ public class NettySSContext<SUBSCRIPTION, DATA> implements SSContext<SUBSCRIPTIO
             final NettyStreamContext<SUBSCRIPTION, DATA> sharedStreamContext = NettyStreamContext.create(subscription, this.serviceName, this.route, this.serializer);
             sharedStreamContext.removeChannelContext(removedSubscriptionId, this.channelCtx);
 
-            this.closeConsumer.accept(sharedSubscription);
+            this.dispatcher.dispatch(() -> this.closeConsumer.accept(sharedSubscription));
         }
     }
 

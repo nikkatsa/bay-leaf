@@ -11,31 +11,33 @@ import com.nikoskatsanos.bayleaf.core.messagingpattern.RRAContext;
 import com.nikoskatsanos.bayleaf.core.messagingpattern.Request;
 import com.nikoskatsanos.bayleaf.core.messagingpattern.Response;
 import com.nikoskatsanos.bayleaf.netty.codec.NettyJsonCodec;
+import com.nikoskatsanos.bayleaf.netty.dispatch.DispatchingStrategy.Dispatcher;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
+@RequiredArgsConstructor
 public class NettyRRAContext<REQUEST, RESPONSE> implements RRAContext<REQUEST, RESPONSE> {
 
     private static final NettyJsonCodec JSON_CODEC = NettyJsonCodec.instance();
 
-    @Setter
-    private Session session;
-    @Setter
-    private String serviceName;
-    @Setter
-    private String route;
+    private final Session session;
+    private final String serviceName;
+    private final String route;
+
+    private final ChannelHandlerContext channelContext;
+
+    private final Dispatcher dispatcher;
 
     private Consumer<Request<REQUEST>> requestConsumer;
     private Consumer<Void> ackConsumer;
     private Consumer<Void> ackTimeoutConsumer;
     private ScheduledFuture<?> timeoutTimer;
 
-    @Setter
-    private ChannelHandlerContext channelContext;
 
     @Setter
     private BayLeafCodec.Serializer serializer;
@@ -59,7 +61,7 @@ public class NettyRRAContext<REQUEST, RESPONSE> implements RRAContext<REQUEST, R
 
     public void request(final ApplicationMessage applicationMessage) {
         REQUEST deserialize = this.deserializer.deserialize(applicationMessage.getData());
-        this.requestConsumer.accept(new Request<>(applicationMessage.getCorrelationId(), deserialize));
+        this.dispatcher.dispatch(() -> this.requestConsumer.accept(new Request<>(applicationMessage.getCorrelationId(), deserialize)));
     }
 
     @Override
@@ -69,7 +71,7 @@ public class NettyRRAContext<REQUEST, RESPONSE> implements RRAContext<REQUEST, R
 
     public void ack() {
         this.timeoutTimer.cancel(true);
-        this.ackConsumer.accept(null);
+        this.dispatcher.dispatch(()-> this.ackConsumer.accept(null));
     }
 
     @Override

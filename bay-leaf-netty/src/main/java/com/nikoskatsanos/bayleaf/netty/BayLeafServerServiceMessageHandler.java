@@ -14,6 +14,7 @@ import com.nikoskatsanos.bayleaf.core.messagingpattern.PSContext;
 import com.nikoskatsanos.bayleaf.core.messagingpattern.RRAContext;
 import com.nikoskatsanos.bayleaf.core.messagingpattern.RRContext;
 import com.nikoskatsanos.bayleaf.core.messagingpattern.SSContext;
+import com.nikoskatsanos.bayleaf.netty.dispatch.DispatchingStrategy;
 import com.nikoskatsanos.bayleaf.netty.messagingpattern.NettyBCContext;
 import com.nikoskatsanos.bayleaf.netty.codec.NettyJsonCodec;
 import com.nikoskatsanos.bayleaf.netty.messagingpattern.NettyPSContext;
@@ -38,6 +39,7 @@ public class BayLeafServerServiceMessageHandler extends SimpleChannelInboundHand
     private static final NettyJsonCodec NETTY_JSON_CODEC = NettyJsonCodec.instance();
 
     private final ConnectorRegistry connectorRegistry;
+    private final DispatchingStrategy dispatchingStrategy;
 
     private final Map<String, ContextHolder> sessionContexts = new ConcurrentHashMap<>();
     private final Map<String, NettyBCContext> broadcastContexts = new ConcurrentHashMap<>();
@@ -127,11 +129,7 @@ public class BayLeafServerServiceMessageHandler extends SimpleChannelInboundHand
 
         @Override
         public RRContext createRR(final String rrEndpointName) {
-            final NettyRRContext rrContext = new NettyRRContext<>();
-            rrContext.setSession(this.session);
-            rrContext.setServiceName(this.serviceName);
-            rrContext.setRoute(rrEndpointName);
-            rrContext.setChannelContext(this.channelHandlerContext);
+            final NettyRRContext rrContext = new NettyRRContext<>(this.session, this.serviceName, rrEndpointName, this.channelHandlerContext, dispatchingStrategy.dispatcher(this.session));
             rrContext.setSerializer(this.serviceConnector.getSerializer());
             rrContext.setDeserializer(this.serviceConnector.getDeserializer());
 
@@ -141,11 +139,7 @@ public class BayLeafServerServiceMessageHandler extends SimpleChannelInboundHand
 
         @Override
         public RRAContext createRRA(final String rraEndpointName) {
-            final NettyRRAContext rraContext = new NettyRRAContext();
-            rraContext.setSession(this.session);
-            rraContext.setServiceName(this.serviceName);
-            rraContext.setRoute(rraEndpointName);
-            rraContext.setChannelContext(this.channelHandlerContext);
+            final NettyRRAContext rraContext = new NettyRRAContext<>(this.session, this.serviceName, rraEndpointName, this.channelHandlerContext, dispatchingStrategy.dispatcher(this.session));
             rraContext.setSerializer(this.serviceConnector.getSerializer());
             rraContext.setDeserializer(this.serviceConnector.getDeserializer());
 
@@ -156,9 +150,7 @@ public class BayLeafServerServiceMessageHandler extends SimpleChannelInboundHand
         @Override
         public BCContext createBroadcast(final String broadcastEndpointName) {
             final NettyBCContext bcContext = BayLeafServerServiceMessageHandler.this.broadcastContexts.computeIfAbsent(broadcastEndpointName, k -> {
-                final NettyBCContext bcCtx = new NettyBCContext<>();
-                bcCtx.setServiceName(this.serviceName);
-                bcCtx.setRoute(broadcastEndpointName);
+                final NettyBCContext bcCtx = new NettyBCContext<>(this.serviceName, broadcastEndpointName);
                 bcCtx.setSerializer(this.serviceConnector.getSerializer());
                 return bcCtx;
             });
@@ -168,13 +160,9 @@ public class BayLeafServerServiceMessageHandler extends SimpleChannelInboundHand
 
         @Override
         public PSContext createPS(final String psEndpointName) {
-            final NettyPSContext psContext = new NettyPSContext<>();
-            psContext.setSession(session);
-            psContext.setServiceName(this.serviceName);
-            psContext.setRoute(psEndpointName);
+            final NettyPSContext psContext = new NettyPSContext<>(this.session, this.serviceName, psEndpointName, this.channelHandlerContext, dispatchingStrategy.dispatcher(this.session));
             psContext.setSerializer(this.serviceConnector.getSerializer());
             psContext.setDeserializer(this.serviceConnector.getDeserializer());
-            psContext.setChannelContext(this.channelHandlerContext);
 
             BayLeafServerServiceMessageHandler.this.sessionContexts.get(this.session.getSessionId()).psContextByName.put(psEndpointName, psContext);
             return psContext;
@@ -182,13 +170,9 @@ public class BayLeafServerServiceMessageHandler extends SimpleChannelInboundHand
 
         @Override
         public SSContext createSS(final String ssEndpointName) {
-            final NettySSContext ssContext = new NettySSContext();
-            ssContext.setSession(this.session);
-            ssContext.setServiceName(this.serviceName);
-            ssContext.setRoute(ssEndpointName);
+            final NettySSContext ssContext = new NettySSContext<>(this.session, this.serviceName, ssEndpointName, this.channelHandlerContext, dispatchingStrategy.dispatcher(this.session));
             ssContext.setSerializer(this.serviceConnector.getSerializer());
             ssContext.setDeserializer(this.serviceConnector.getDeserializer());
-            ssContext.setChannelCtx(this.channelHandlerContext);
             BayLeafServerServiceMessageHandler.this.sessionContexts.get(this.session.getSessionId()).ssContextByName.put(ssEndpointName, ssContext);
             return ssContext;
         }

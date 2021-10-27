@@ -3,6 +3,7 @@ package com.nikoskatsanos.bayleaf.netty;
 import com.nikoskatsanos.bayleaf.core.ConnectorRegistry;
 import com.nikoskatsanos.bayleaf.core.auth.Authenticator;
 import com.nikoskatsanos.bayleaf.core.auth.Authorizer;
+import com.nikoskatsanos.bayleaf.netty.dispatch.DispatchingStrategy;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelOption;
@@ -71,6 +72,8 @@ public class BayLeafServer implements AutoCloseable {
 
         private SslContext sslContext;
 
+        private DispatchingStrategy dispatchingStrategy = DispatchingStrategy.defaultStrategy();
+
         public Builder withPort(final int port) {
             this.port = port;
             return this;
@@ -100,9 +103,14 @@ public class BayLeafServer implements AutoCloseable {
             }
         }
 
+        public Builder withDispatchingStrategy(final DispatchingStrategy dispatchingStrategy) {
+            this.dispatchingStrategy = dispatchingStrategy;
+            return this;
+        }
+
         public BayLeafServer build() {
             final BayLeafServerSessionHandler sessionHandler = new BayLeafServerSessionHandler(this.authenticator, this.authorizer);
-            final BayLeafServerServiceMessageHandler serviceMessageHandler = new BayLeafServerServiceMessageHandler(this.connectorRegistry);
+            final BayLeafServerServiceMessageHandler serviceMessageHandler = new BayLeafServerServiceMessageHandler(this.connectorRegistry, this.dispatchingStrategy);
             final BayLeafServerChannelInitializer channelInitializer = new BayLeafServerChannelInitializer(sessionHandler, serviceMessageHandler, this.sslContext);
             return new BayLeafServer(this.port, channelInitializer);
         }

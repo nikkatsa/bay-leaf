@@ -11,18 +11,19 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import java.util.HashSet;
 import java.util.Set;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
+@RequiredArgsConstructor
 @Slf4j
 public class NettyBCContext<BROADCAST> implements BCContext<BROADCAST> {
 
     private static final NettyJsonCodec JSON_CODEC = NettyJsonCodec.instance();
 
-    @Setter
-    private String serviceName;
-    @Setter
-    private String route;
+    private final String serviceName;
+    private final String route;
+
     @Setter
     private BayLeafCodec.Serializer serializer;
 

@@ -11,26 +11,27 @@ import com.nikoskatsanos.bayleaf.core.messagingpattern.RRContext;
 import com.nikoskatsanos.bayleaf.core.messagingpattern.Request;
 import com.nikoskatsanos.bayleaf.core.messagingpattern.Response;
 import com.nikoskatsanos.bayleaf.netty.codec.NettyJsonCodec;
+import com.nikoskatsanos.bayleaf.netty.dispatch.DispatchingStrategy.Dispatcher;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import java.util.function.Consumer;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
+@RequiredArgsConstructor
 public class NettyRRContext<REQUEST, RESPONSE> implements RRContext<REQUEST, RESPONSE> {
 
     private static final NettyJsonCodec JSON_CODEC = NettyJsonCodec.instance();
 
-    @Setter
-    private Session session;
-    @Setter
-    private String serviceName;
-    @Setter
-    private String route;
+    private final Session session;
+    private final String serviceName;
+    private final String route;
+
+    private final ChannelHandlerContext channelContext;
+
+    private final Dispatcher dispatcher;
 
     private Consumer<Request<REQUEST>> requestConsumer;
-
-    @Setter
-    private ChannelHandlerContext channelContext;
 
     @Setter
     private BayLeafCodec.Serializer serializer;
@@ -49,7 +50,7 @@ public class NettyRRContext<REQUEST, RESPONSE> implements RRContext<REQUEST, RES
 
     public void request(final ApplicationMessage applicationMessage) {
         REQUEST deserialize = this.deserializer.deserialize(applicationMessage.getData());
-        this.requestConsumer.accept(new Request<>(applicationMessage.getCorrelationId(), deserialize));
+        this.dispatcher.dispatch(() -> this.requestConsumer.accept(new Request<>(applicationMessage.getCorrelationId(), deserialize)));
     }
 
     @Override

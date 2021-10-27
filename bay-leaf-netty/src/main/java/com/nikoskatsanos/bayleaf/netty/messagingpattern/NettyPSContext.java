@@ -9,27 +9,28 @@ import com.nikoskatsanos.bayleaf.core.messagingpattern.PSContext;
 import com.nikoskatsanos.bayleaf.core.messagingpattern.Subscription;
 import com.nikoskatsanos.bayleaf.core.messagingpattern.SubscriptionData;
 import com.nikoskatsanos.bayleaf.netty.codec.NettyJsonCodec;
+import com.nikoskatsanos.bayleaf.netty.dispatch.DispatchingStrategy.Dispatcher;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import java.util.Objects;
 import java.util.function.Consumer;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
+@RequiredArgsConstructor
 @Slf4j
 public class NettyPSContext<SUBSCRIPTION, DATA> implements PSContext<SUBSCRIPTION, DATA> {
 
     private static final NettyJsonCodec JSON_CODEC = NettyJsonCodec.instance();
 
-    @Setter
-    private Session session;
-    @Setter
-    private String serviceName;
-    @Setter
-    private String route;
+    private final Session session;
+    private final String serviceName;
+    private final String route;
 
-    @Setter
-    private ChannelHandlerContext channelContext;
+    private final ChannelHandlerContext channelContext;
+
+    private final Dispatcher dispatcher;
 
     @Setter
     private BayLeafCodec.Serializer serializer;
@@ -53,7 +54,7 @@ public class NettyPSContext<SUBSCRIPTION, DATA> implements PSContext<SUBSCRIPTIO
         final SUBSCRIPTION subscriptionData = this.deserializer.deserialize(applicationMessage.getData());
         final Subscription<SUBSCRIPTION> subscription = new Subscription<>(applicationMessage.getCorrelationId(), subscriptionData);
         if (Objects.nonNull(this.subscriptionConsumer)) {
-            this.subscriptionConsumer.accept(subscription);
+            this.dispatcher.dispatch(() -> this.subscriptionConsumer.accept(subscription));
         } else {
             logger.warn("Subscription consumer not set for Service={}, Route={}, Session={}. Discarding Subscription={}", this.serviceName, this.route, this.session, subscription);
         }
@@ -68,7 +69,7 @@ public class NettyPSContext<SUBSCRIPTION, DATA> implements PSContext<SUBSCRIPTIO
         if (Objects.nonNull(this.closeConsumer)) {
             final SUBSCRIPTION subscriptionData = this.deserializer.deserialize(appMsg.getData());
             final Subscription<SUBSCRIPTION> subscription = new Subscription<>(appMsg.getCorrelationId(), subscriptionData);
-            this.closeConsumer.accept(subscription);
+            this.dispatcher.dispatch(() -> this.closeConsumer.accept(subscription));
         }
     }
 
