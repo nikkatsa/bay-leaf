@@ -17,5 +17,8 @@
 # Maven
 target/
 
+# Node
+node_modules/
+
 # MacOS
 .DS_Store
