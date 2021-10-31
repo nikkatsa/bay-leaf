@@ -3,8 +3,11 @@ package com.nikoskatsanos.bayleaf.core;
 import com.nikoskatsanos.bayleaf.core.codec.BayLeafCodec;
 import com.nikoskatsanos.bayleaf.core.codec.BayLeafCodec.Deserializer;
 import com.nikoskatsanos.bayleaf.core.codec.BayLeafCodec.Serializer;
+import com.nikoskatsanos.bayleaf.core.codec.CodecDetails;
 import com.nikoskatsanos.bayleaf.core.messagingpattern.BC;
 import com.nikoskatsanos.bayleaf.core.messagingpattern.BCContext;
+import com.nikoskatsanos.bayleaf.core.messagingpattern.MessagingPattern;
+import com.nikoskatsanos.bayleaf.core.messagingpattern.MessagingPatternDetails;
 import com.nikoskatsanos.bayleaf.core.messagingpattern.PS;
 import com.nikoskatsanos.bayleaf.core.messagingpattern.PSContext;
 import com.nikoskatsanos.bayleaf.core.messagingpattern.RR;
@@ -21,6 +24,7 @@ import java.lang.reflect.Parameter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -38,16 +42,14 @@ public abstract class Connector {
 
     @Getter
     private final String name;
-    @Getter
     private final BayLeafCodec.Deserializer deserializer;
-    @Getter
     private final BayLeafCodec.Serializer serializer;
 
-    private final Map<String, Method> rrMessagingPatterns = new HashMap<>();
-    private final Map<String, Method> rraMessagingPatterns = new HashMap<>();
-    private final Map<String, Method> psMessagingPatterns = new HashMap<>();
-    private final Map<String, Method> ssMessagingPatterns = new HashMap<>();
-    private final Map<String, Method> bcMessagingPatterns = new HashMap<>();
+    private final Map<String, MessagingPatternDetails> rrMessagingPatterns = new HashMap<>();
+    private final Map<String, MessagingPatternDetails> rraMessagingPatterns = new HashMap<>();
+    private final Map<String, MessagingPatternDetails> psMessagingPatterns = new HashMap<>();
+    private final Map<String, MessagingPatternDetails> ssMessagingPatterns = new HashMap<>();
+    private final Map<String, MessagingPatternDetails> bcMessagingPatterns = new HashMap<>();
 
     private final Map<String, SessionContext> sessions = new ConcurrentHashMap<>();
     private final Map<String, Heartbeater> heartbeaters = new ConcurrentHashMap<>();
@@ -93,7 +95,7 @@ public abstract class Connector {
         this.rrMessagingPatterns.entrySet().forEach(rr -> {
             RRContext rrContext = messagingPatternContextFactory.createRR(rr.getKey());
             try {
-                rr.getValue().invoke(this, rrContext);
+                rr.getValue().getMethod().invoke(this, rrContext);
             } catch (final Exception e) {
                 logger.error(e.getMessage(), e);
             }
@@ -101,7 +103,7 @@ public abstract class Connector {
         this.rraMessagingPatterns.entrySet().forEach(rra -> {
             RRAContext rraContext = messagingPatternContextFactory.createRRA(rra.getKey());
             try {
-                rra.getValue().invoke(this, rraContext);
+                rra.getValue().getMethod().invoke(this, rraContext);
             } catch (final Exception e) {
                 logger.error(e.getMessage(), e);
             }
@@ -109,7 +111,7 @@ public abstract class Connector {
         this.bcMessagingPatterns.entrySet().forEach(bc -> {
             final BCContext bcContext = messagingPatternContextFactory.createBroadcast(bc.getKey());
             try {
-                bc.getValue().invoke(this, bcContext);
+                bc.getValue().getMethod().invoke(this, bcContext);
             } catch (final Exception e) {
                 logger.error(e.getMessage(), e);
             }
@@ -117,7 +119,7 @@ public abstract class Connector {
         this.psMessagingPatterns.entrySet().forEach(ps -> {
             final PSContext psContext = messagingPatternContextFactory.createPS(ps.getKey());
             try {
-                ps.getValue().invoke(this, psContext);
+                ps.getValue().getMethod().invoke(this, psContext);
             } catch (final Exception e) {
                 logger.error(e.getMessage(), e);
             }
@@ -125,7 +127,7 @@ public abstract class Connector {
         this.ssMessagingPatterns.entrySet().forEach(ss -> {
             final SSContext ssContext = messagingPatternContextFactory.createSS(ss.getKey());
             try {
-                ss.getValue().invoke(this, ssContext);
+                ss.getValue().getMethod().invoke(this, ssContext);
             } catch (final Exception e) {
                 logger.error(e.getMessage(), e);
             }
@@ -133,7 +135,7 @@ public abstract class Connector {
 
         final Heartbeater heartbeater = new Heartbeater(sessionContext);
         this.heartbeaters.put(sessionContext.getSession().getSessionId(), heartbeater);
-        sessionContext.onHeartbeat(heartbeater::incomingHeartbeat);
+        sessionContext.onHeartbeat(this.name, heartbeater::incomingHeartbeat);
         heartbeater.schedule();
     }
 
@@ -151,7 +153,10 @@ public abstract class Connector {
 
         for (final Method method : methods) {
             if (method.isAnnotationPresent(RR.class)) {
-                final String name = method.getAnnotation(RR.class).name();
+                final RR rrAnnotation = method.getAnnotation(RR.class);
+                final String name = rrAnnotation.name();
+                final Class<?> inType = rrAnnotation.requestType();
+                final Class<?> outType = rrAnnotation.responseType();
                 final Parameter[] parameters = method.getParameters();
                 if (parameters.length != 1 || !RRContext.class.equals(parameters[0].getType())) {
                     final String errorMsg = String.format("%s annotated method must have one parameter of type %s. Method=%s with %s#name=%s has Parameters=[%s]",
@@ -160,9 +165,12 @@ public abstract class Connector {
                     throw new IllegalArgumentException(errorMsg);
                 }
 
-                this.rrMessagingPatterns.put(name, method);
+                this.rrMessagingPatterns.put(name, new MessagingPatternDetails(name, method, inType, outType));
             } else if (method.isAnnotationPresent(RRA.class)) {
-                final String name = method.getAnnotation(RRA.class).name();
+                final RRA rraAnnotation = method.getAnnotation(RRA.class);
+                final String name = rraAnnotation.name();
+                final Class<?> inType = rraAnnotation.requestType();
+                final Class<?> outType = rraAnnotation.responseType();
                 final Parameter[] parameters = method.getParameters();
                 if (parameters.length != 1 || !RRAContext.class.equals(parameters[0].getType())) {
                     final String errorMsg = String.format("%s annotated method must have one parameters of type %s. Method=%s with %s#name=%s has Parameters=[%s]",
@@ -171,9 +179,12 @@ public abstract class Connector {
                     throw new IllegalArgumentException(errorMsg);
                 }
 
-                this.rraMessagingPatterns.put(name, method);
+                this.rraMessagingPatterns.put(name, new MessagingPatternDetails(name, method, inType, outType));
             } else if (method.isAnnotationPresent(BC.class)) {
-                final String name = method.getAnnotation(BC.class).name();
+                final BC bcAnnotation = method.getAnnotation(BC.class);
+                final String name = bcAnnotation.name();
+                final Class<?> inType = Void.class;
+                final Class<?> outType = bcAnnotation.broadcastType();
                 final Parameter[] parameters = method.getParameters();
                 if (parameters.length != 1 || !BCContext.class.equals(parameters[0].getType())) {
                     final String errorMsg = String.format("%s annotated method must have one parameter of type %s. Method=%s with %s#name=%s has Parameters=[%s]",
@@ -182,9 +193,12 @@ public abstract class Connector {
                     throw new IllegalArgumentException(errorMsg);
                 }
 
-                this.bcMessagingPatterns.put(name, method);
+                this.bcMessagingPatterns.put(name, new MessagingPatternDetails(name, method, inType, outType));
             } else if (method.isAnnotationPresent(PS.class)) {
-                final String name = method.getAnnotation(PS.class).name();
+                final PS psAnnotation = method.getAnnotation(PS.class);
+                final String name = psAnnotation.name();
+                final Class<?> inType = psAnnotation.subscriptionType();
+                final Class<?> outType = psAnnotation.dataType();
                 final Parameter[] parameters = method.getParameters();
                 if (parameters.length != 1 || !PSContext.class.equals(parameters[0].getType())) {
                     final String errorMsg = String.format("%s annotated method must have one parameter of type %s. Method=%s with %s#name=%s has Parametrs=[%s]",
@@ -193,20 +207,47 @@ public abstract class Connector {
                     throw new IllegalArgumentException(errorMsg);
                 }
 
-                this.psMessagingPatterns.put(name, method);
+                this.psMessagingPatterns.put(name, new MessagingPatternDetails(name, method, inType, outType));
             } else if (method.isAnnotationPresent(SS.class)) {
-                final String name = method.getAnnotation(SS.class).name();
+                final SS ssAnnotation = method.getAnnotation(SS.class);
+                final String name = ssAnnotation.name();
+                final Class<?> inType = ssAnnotation.subscriptionType();
+                final Class<?> outType = ssAnnotation.dataType();
                 final Parameter[] parameters = method.getParameters();
                 if (parameters.length != 1 || !SSContext.class.equals(parameters[0].getType())) {
-                    final String errorMsg = String.format("%s annotated method must have one parameter of type %s. Method=%s with %s#name=%s has Parametrs=[%s]",
+                    final String errorMsg = String.format("%s annotated method must have one parameter of type %s. Method=%s with %s#name=%s has Parameters=[%s]",
                         SS.class.getName(), SSContext.class.getName(), method.getName(), SS.class, name,
                         Stream.of(parameters).map(p -> String.format("%s %s", p.getType(), p.getName())).collect(Collectors.joining(",")));
                     throw new IllegalArgumentException(errorMsg);
                 }
 
-                this.ssMessagingPatterns.put(name, method);
+                this.ssMessagingPatterns.put(name, new MessagingPatternDetails(name, method, inType, outType));
             }
         }
+    }
+
+    public CodecDetails getCodecDetails(final String endpointName) {
+        MessagingPatternDetails messagingPatternDetails = this.rrMessagingPatterns.get(endpointName);
+        if(Objects.nonNull(messagingPatternDetails)) {
+            return new CodecDetails(this.serializer, this.deserializer, messagingPatternDetails.getInType(), messagingPatternDetails.getOutType());
+        }
+        messagingPatternDetails = this.rraMessagingPatterns.get(endpointName);
+        if(Objects.nonNull(messagingPatternDetails)) {
+            return new CodecDetails(this.serializer, this.deserializer, messagingPatternDetails.getInType(), messagingPatternDetails.getOutType());
+        }
+        messagingPatternDetails = this.psMessagingPatterns.get(endpointName);
+        if(Objects.nonNull(messagingPatternDetails)) {
+            return new CodecDetails(this.serializer, this.deserializer, messagingPatternDetails.getInType(), messagingPatternDetails.getOutType());
+        }
+        messagingPatternDetails = this.ssMessagingPatterns.get(endpointName);
+        if (Objects.nonNull(messagingPatternDetails)) {
+        return new CodecDetails(this.serializer, this.deserializer, messagingPatternDetails.getInType(), messagingPatternDetails.getOutType());
+        }
+        messagingPatternDetails = this.bcMessagingPatterns.get(endpointName);
+        if (Objects.nonNull(messagingPatternDetails)) {
+            return new CodecDetails(this.serializer, this.deserializer, messagingPatternDetails.getInType(), messagingPatternDetails.getOutType());
+        }
+        throw new IllegalArgumentException(String.format("EndpointName=%s was not found in Connector=%s messaging patterns", endpointName, this.name));
     }
 
     @RequiredArgsConstructor

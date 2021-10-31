@@ -19,6 +19,8 @@ public class NettyEchoServer {
     public static void main(String[] args) {
         final ConnectorRegistry connectorRegistry = new ConnectorRegistry();
         connectorRegistry.registerConnector(new EchoConnector("echoService"));
+        connectorRegistry.registerConnector(new MarketDataConnector("marketData"));
+        connectorRegistry.registerConnector(new TradeConnector("tradeService"));
 
         final File cert = new File("bay-leaf-example/src/main/resources/test.cer");
         final File keystore = new File("bay-leaf-example/src/main/resources/test_key.pem");

@@ -8,5 +8,5 @@ public interface SessionContext {
 
     void heartbeat(final Heartbeat heartbeat);
 
-    void onHeartbeat(final Consumer<Heartbeat> heartbeatConsumer);
+    void onHeartbeat(final String serviceName, final Consumer<Heartbeat> heartbeatConsumer);
 }

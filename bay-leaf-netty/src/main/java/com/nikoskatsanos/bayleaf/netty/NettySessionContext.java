@@ -9,7 +9,9 @@ import com.nikoskatsanos.bayleaf.core.message.SessionMessage;
 import com.nikoskatsanos.bayleaf.netty.codec.NettyJsonCodec;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
+import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +25,7 @@ public class NettySessionContext implements SessionContext {
     private final Session session;
     private final ChannelHandlerContext channelCtx;
 
-    private Consumer<Heartbeat> heartbeatConsumer;
+    private Map<String, Consumer<Heartbeat>> heartbeatConsumers = new ConcurrentHashMap<>();
 
     @Override
     public Session getSession() {
@@ -37,13 +39,14 @@ public class NettySessionContext implements SessionContext {
     }
 
     @Override
-    public void onHeartbeat(final Consumer<Heartbeat> heartbeatConsumer) {
-        this.heartbeatConsumer = heartbeatConsumer;
+    public void onHeartbeat(final String serviceName, final Consumer<Heartbeat> heartbeatConsumer) {
+        this.heartbeatConsumers.put(serviceName, heartbeatConsumer);
     }
 
     public void heartbeatIn(final Heartbeat heartbeat) {
-        if (Objects.nonNull(this.heartbeatConsumer)) {
-            this.heartbeatConsumer.accept(heartbeat);
+        final Consumer<Heartbeat> heartbeatConsumer = this.heartbeatConsumers.get(heartbeat.getServiceName());
+        if (Objects.nonNull(heartbeatConsumer)) {
+            heartbeatConsumer.accept(heartbeat);
         }
     }
 }

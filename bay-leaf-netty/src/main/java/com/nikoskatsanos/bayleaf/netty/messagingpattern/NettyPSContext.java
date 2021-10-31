@@ -15,7 +15,6 @@ import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import java.util.Objects;
 import java.util.function.Consumer;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 @RequiredArgsConstructor
@@ -32,10 +31,10 @@ public class NettyPSContext<SUBSCRIPTION, DATA> implements PSContext<SUBSCRIPTIO
 
     private final Dispatcher dispatcher;
 
-    @Setter
     private BayLeafCodec.Serializer serializer;
-    @Setter
+    private Class<DATA> dataType;
     private BayLeafCodec.Deserializer deserializer;
+    private Class<SUBSCRIPTION> subscriptionType;
 
     private volatile Consumer<Subscription<SUBSCRIPTION>> subscriptionConsumer;
     private volatile Consumer<Subscription<SUBSCRIPTION>> closeConsumer;
@@ -51,7 +50,7 @@ public class NettyPSContext<SUBSCRIPTION, DATA> implements PSContext<SUBSCRIPTIO
     }
 
     public void subscription(final ApplicationMessage applicationMessage) {
-        final SUBSCRIPTION subscriptionData = this.deserializer.deserialize(applicationMessage.getData());
+        final SUBSCRIPTION subscriptionData = this.deserializer.deserialize(applicationMessage.getData(), this.subscriptionType);
         final Subscription<SUBSCRIPTION> subscription = new Subscription<>(applicationMessage.getCorrelationId(), subscriptionData);
         if (Objects.nonNull(this.subscriptionConsumer)) {
             this.dispatcher.dispatch(() -> this.subscriptionConsumer.accept(subscription));
@@ -67,7 +66,7 @@ public class NettyPSContext<SUBSCRIPTION, DATA> implements PSContext<SUBSCRIPTIO
 
     public void close(final ApplicationMessage appMsg) {
         if (Objects.nonNull(this.closeConsumer)) {
-            final SUBSCRIPTION subscriptionData = this.deserializer.deserialize(appMsg.getData());
+            final SUBSCRIPTION subscriptionData = this.deserializer.deserialize(appMsg.getData(), this.subscriptionType);
             final Subscription<SUBSCRIPTION> subscription = new Subscription<>(appMsg.getCorrelationId(), subscriptionData);
             this.dispatcher.dispatch(() -> this.closeConsumer.accept(subscription));
         }
@@ -84,9 +83,19 @@ public class NettyPSContext<SUBSCRIPTION, DATA> implements PSContext<SUBSCRIPTIO
     }
 
     private void sendData(final SubscriptionData<SUBSCRIPTION, DATA> subscriptionData, final MessageType msgType) {
-        final byte[] serialized = this.serializer.serialize(subscriptionData.getData());
+        final byte[] serialized = this.serializer.serialize(subscriptionData.getData(), this.dataType);
         final ApplicationMessage applicationMessage =
             new ApplicationMessage(subscriptionData.getSubscription().getId(), msgType, this.serviceName, this.route, MessagingPattern.PS, serialized);
-        this.channelContext.executor().execute(()-> this.channelContext.writeAndFlush(new TextWebSocketFrame(JSON_CODEC.serializeToString(applicationMessage))));
+        this.channelContext.executor().execute(() -> this.channelContext.writeAndFlush(new TextWebSocketFrame(JSON_CODEC.serializeToString(applicationMessage))));
+    }
+
+    public void setSerializer(final BayLeafCodec.Serializer serializer, final Class<SUBSCRIPTION> inType) {
+        this.serializer = serializer;
+        this.subscriptionType = inType;
+    }
+
+    public void setDeserializer(final BayLeafCodec.Deserializer deserializer, final Class<DATA> outType) {
+        this.deserializer = deserializer;
+        this.dataType = outType;
     }
 }

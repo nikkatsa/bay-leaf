@@ -50,7 +50,7 @@ public class EchoConnector extends Connector {
         super(name, STRING_CODEC.deserializer(), STRING_CODEC.serializer());
     }
 
-    @RR(name = "echo")
+    @RR(name = "echo", requestType = String.class, responseType = String.class)
     public void echoRR(final RRContext<String, String> rrContext) {
         rrContext.onRequest(request -> {
             logger.info("Endpoint=echo, Request={}, Session={}", request, rrContext.session());
@@ -59,7 +59,7 @@ public class EchoConnector extends Connector {
         });
     }
 
-    @RR(name = "echoError")
+    @RR(name = "echoError", requestType = String.class, responseType = String.class)
     public void echoError(final RRContext<String, String> rrContext) {
         rrContext.onRequest(request -> {
             logger.info("Endpoint=echoError, Request={}, Session={}", request, rrContext.session());
@@ -68,7 +68,7 @@ public class EchoConnector extends Connector {
         });
     }
 
-    @RRA(name = "echoAck", ackTimeout = 1)
+    @RRA(name = "echoAck", requestType = String.class, responseType = String.class, ackTimeout = 1)
     public void echoAck(final RRAContext<String, String> rraContext) {
 
         final EchoResponseAckSender responseAckSender = new EchoResponseAckSender(rraContext);
@@ -83,7 +83,7 @@ public class EchoConnector extends Connector {
         rraContext.onAckTimeout(v -> logger.error("Timed out"));
     }
 
-    @BC(name = "echoBroadcast")
+    @BC(name = "echoBroadcast", broadcastType = String.class)
     public void broadcast(final BCContext<String> broadcastContext) {
         logger.info("BroadcastEndpoint=echoBroadcast enabled", broadcastContext);
         this.echoBroadcast = broadcastContext;
@@ -101,7 +101,7 @@ public class EchoConnector extends Connector {
         }
     }
 
-    @PS(name = "echoStream")
+    @PS(name = "echoStream", subscriptionType = String.class, dataType = String.class)
     public void privateStream(final PSContext<String, String> psContext) {
         psContext.onSubscription(sub -> {
             logger.info("Subscription Request={}, Session={}", sub, psContext.session());
@@ -119,7 +119,7 @@ public class EchoConnector extends Connector {
         });
     }
 
-    @SS(name = "echoShared")
+    @SS(name = "echoShared", subscriptionType = String.class, dataType = String.class)
     public void sharedStream(final SSContext<String, String> ssContext) {
         ssContext.onSubscription(ssSub -> {
             final EchoSharedStreamer echoSharedStreamer = this.sharedStreamers

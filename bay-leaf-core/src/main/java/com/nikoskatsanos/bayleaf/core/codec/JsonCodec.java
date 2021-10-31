@@ -1,15 +1,16 @@
 package com.nikoskatsanos.bayleaf.core.codec;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class JsonCodec implements BayLeafCodec{
+public class JsonCodec implements BayLeafCodec {
 
-    private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
+    private static final ObjectMapper JSON_MAPPER = new ObjectMapper()
+        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+        .configure(SerializationFeature.INDENT_OUTPUT, false);
 
     private static final Serializer SERIALIZER = new Serializer();
     private static final Deserializer DESERIALIZER = new Deserializer();
@@ -24,20 +25,22 @@ public class JsonCodec implements BayLeafCodec{
         return DESERIALIZER;
     }
 
-    public static class Serializer implements BayLeafCodec.Serializer{
+    public static class Serializer implements BayLeafCodec.Serializer {
 
         @SneakyThrows
-        public <OUT> byte[] serialize(final OUT msg) {
+        @Override
+        public <OUT> byte[] serialize(OUT msg, Class<OUT> outType) {
             return JSON_MAPPER.writeValueAsBytes(msg);
         }
     }
 
     @RequiredArgsConstructor
-    public static class Deserializer implements BayLeafCodec.Deserializer{
+    public static class Deserializer implements BayLeafCodec.Deserializer {
 
         @SneakyThrows
-        public <IN> IN deserialize(final byte[] msg) {
-            return (IN) JSON_MAPPER.readValue(msg, msg.getClass());
+        @Override
+        public <IN> IN deserialize(final byte[] bytes, final Class<IN> inType){
+            return JSON_MAPPER.readValue(bytes, inType);
         }
     }
 }

@@ -21,7 +21,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 @RequiredArgsConstructor
@@ -38,11 +37,10 @@ public class NettySSContext<SUBSCRIPTION, DATA> implements SSContext<SUBSCRIPTIO
 
     private final Dispatcher dispatcher;
 
-    @Setter
     private BayLeafCodec.Serializer serializer;
-    @Setter
+    private Class<DATA> dataType;
     private BayLeafCodec.Deserializer deserializer;
-
+    private Class<SUBSCRIPTION> subscriptionType;
 
     private volatile Consumer<SharedSubscription<SUBSCRIPTION>> subscriptionConsumer;
     private volatile Consumer<SharedSubscription<SUBSCRIPTION>> closeConsumer;
@@ -60,7 +58,7 @@ public class NettySSContext<SUBSCRIPTION, DATA> implements SSContext<SUBSCRIPTIO
     }
 
     public void subscription(final ApplicationMessage appMsg) {
-        final SUBSCRIPTION subscription = this.deserializer.deserialize(appMsg.getData());
+        final SUBSCRIPTION subscription = this.deserializer.<SUBSCRIPTION>deserialize(appMsg.getData(), this.subscriptionType);
         final String subscriptionHash = String.valueOf(subscription.hashCode());
 
         if (subscriptionHashes.containsKey(subscriptionHash)) {
@@ -72,7 +70,7 @@ public class NettySSContext<SUBSCRIPTION, DATA> implements SSContext<SUBSCRIPTIO
 
         final SharedSubscription<SUBSCRIPTION> sharedSubscription = new SharedSubscription<>(subscriptionHash, subscription);
 
-        final NettyStreamContext<SUBSCRIPTION, DATA> sharedStreamContext = NettyStreamContext.create(subscription, this.serviceName, this.route, this.serializer);
+        final NettyStreamContext<SUBSCRIPTION, DATA> sharedStreamContext = NettyStreamContext.create(subscription, this.serviceName, this.route, this.serializer, this.dataType);
         sharedStreamContext.addChannelContext(appMsg.getCorrelationId(), this.channelCtx);
         if (Objects.nonNull(this.subscriptionConsumer)) {
             this.dispatcher.dispatch(() -> this.subscriptionConsumer.accept(sharedSubscription));
@@ -86,7 +84,7 @@ public class NettySSContext<SUBSCRIPTION, DATA> implements SSContext<SUBSCRIPTIO
 
     public void close(final ApplicationMessage appMsg) {
         if (Objects.nonNull(this.closeConsumer)) {
-            final SUBSCRIPTION subscription = this.deserializer.deserialize(appMsg.getData());
+            final SUBSCRIPTION subscription = this.deserializer.deserialize(appMsg.getData(), this.subscriptionType);
 
             final String subscriptionHash = String.valueOf(subscription.hashCode());
             final String removedSubscriptionId = subscriptionHashes.remove(subscriptionHash);
@@ -96,7 +94,7 @@ public class NettySSContext<SUBSCRIPTION, DATA> implements SSContext<SUBSCRIPTIO
             }
             final SharedSubscription<SUBSCRIPTION> sharedSubscription = new SharedSubscription<>(subscriptionHash, subscription);
 
-            final NettyStreamContext<SUBSCRIPTION, DATA> sharedStreamContext = NettyStreamContext.create(subscription, this.serviceName, this.route, this.serializer);
+            final NettyStreamContext<SUBSCRIPTION, DATA> sharedStreamContext = NettyStreamContext.create(subscription, this.serviceName, this.route, this.serializer, this.dataType);
             sharedStreamContext.removeChannelContext(removedSubscriptionId, this.channelCtx);
 
             this.dispatcher.dispatch(() -> this.closeConsumer.accept(sharedSubscription));
@@ -106,15 +104,25 @@ public class NettySSContext<SUBSCRIPTION, DATA> implements SSContext<SUBSCRIPTIO
     @Override
     public void snapshot(final SharedSubscriptionData<SUBSCRIPTION, DATA> snapshot) {
         final String correlationId = this.subscriptionHashes.get(snapshot.getSubscription().getSubscriptionId());
-        final byte[] serialized = this.serializer.serialize(snapshot.getData());
+        final byte[] serialized = this.serializer.serialize(snapshot.getData(), this.dataType);
         final ApplicationMessage appMsg = new ApplicationMessage(correlationId, MessageType.INITIAL_DATA, this.serviceName, this.route, MessagingPattern.SS, serialized);
         this.channelCtx.writeAndFlush(new TextWebSocketFrame(NETTY_JSON_CODEC.serializeToString(appMsg)));
     }
 
     @Override
     public StreamContext<SUBSCRIPTION, DATA> streamContext(final SUBSCRIPTION subscription) {
-        final NettyStreamContext<SUBSCRIPTION, DATA> sharedStreamContext = NettyStreamContext.create(subscription, this.serviceName, this.route, this.serializer);
+        final NettyStreamContext<SUBSCRIPTION, DATA> sharedStreamContext = NettyStreamContext.create(subscription, this.serviceName, this.route, this.serializer, this.dataType);
         return sharedStreamContext;
+    }
+
+    public void setSerializer(final BayLeafCodec.Serializer serializer, final Class<SUBSCRIPTION> inType) {
+        this.serializer = serializer;
+        this.subscriptionType = inType;
+    }
+
+    public void setDeserializer(final BayLeafCodec.Deserializer deserializer, final Class<DATA> outType) {
+        this.deserializer = deserializer;
+        this.dataType = outType;
     }
 
     @RequiredArgsConstructor
@@ -129,14 +137,16 @@ public class NettySSContext<SUBSCRIPTION, DATA> implements SSContext<SUBSCRIPTIO
         private final String serviceName;
         private final String route;
         private final BayLeafCodec.Serializer serializer;
+        private final Class<DATA> dataType;
 
         static <SUBSCRIPTION, DATA> NettyStreamContext<SUBSCRIPTION, DATA> create(
             final SUBSCRIPTION subscription,
             final String serviceName,
             final String route,
-            final BayLeafCodec.Serializer serializer) {
+            final BayLeafCodec.Serializer serializer,
+            final Class<DATA> dataType) {
             return (NettyStreamContext<SUBSCRIPTION, DATA>) SHARED_STREAM_CONTEXTS.computeIfAbsent(String.format("%s_%s_%d", serviceName, route, subscription.hashCode()),
-                k -> new NettyStreamContext<>(subscription, serviceName, route, serializer));
+                k -> new NettyStreamContext<>(subscription, serviceName, route, serializer, dataType));
         }
 
         @Override
@@ -151,12 +161,12 @@ public class NettySSContext<SUBSCRIPTION, DATA> implements SSContext<SUBSCRIPTIO
 
         @Override
         public void stream(final SharedSubscriptionData<SUBSCRIPTION, DATA> stream) {
-            final byte[] serialized = serializer.serialize(stream.getData());
+            final byte[] serialized = serializer.serialize(stream.getData(), this.dataType);
             for (final SubscriptionChannelHandlerContext subscriber : this.channelContexts) {
                 final ApplicationMessage appMsg = new ApplicationMessage(subscriber.subscriptionId, MessageType.DATA, serviceName, route, MessagingPattern.SS, serialized);
                 try {
                     final TextWebSocketFrame out = new TextWebSocketFrame(NETTY_JSON_CODEC.serializeToString(appMsg));
-                    subscriber.channelCtx.executor().execute( ()-> subscriber.channelCtx.writeAndFlush(out));
+                    subscriber.channelCtx.executor().execute(() -> subscriber.channelCtx.writeAndFlush(out));
                 } catch (final Exception e) {
                     logger.error(e.getMessage(), e);
                 }
@@ -182,7 +192,8 @@ public class NettySSContext<SUBSCRIPTION, DATA> implements SSContext<SUBSCRIPTIO
             this.closeConsumers.forEach(c -> {
                 try {
                     c.accept(null);
-                } catch (final Exception e) {}
+                } catch (final Exception e) {
+                }
             });
         }
     }

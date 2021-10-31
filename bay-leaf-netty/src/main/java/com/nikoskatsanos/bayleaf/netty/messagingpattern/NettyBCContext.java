@@ -12,7 +12,6 @@ import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import java.util.HashSet;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 @RequiredArgsConstructor
@@ -24,8 +23,8 @@ public class NettyBCContext<BROADCAST> implements BCContext<BROADCAST> {
     private final String serviceName;
     private final String route;
 
-    @Setter
     private BayLeafCodec.Serializer serializer;
+    private Class<BROADCAST> broadcastType;
 
     private Set<ChannelHandlerContext> channelContexts = new HashSet<>();
 
@@ -35,7 +34,7 @@ public class NettyBCContext<BROADCAST> implements BCContext<BROADCAST> {
 
     @Override
     public void broadcast(final Broadcast<BROADCAST> broadcast) {
-        final byte[] data = this.serializer.serialize(broadcast.getBroadcastMsg());
+        final byte[] data = this.serializer.serialize(broadcast.getBroadcastMsg(), this.broadcastType);
         final ApplicationMessage msg = new ApplicationMessage("", MessageType.DATA, this.serviceName, this.route, MessagingPattern.BC, data);
         final String serialized = JSON_CODEC.serializeToString(msg);
         for (final ChannelHandlerContext channelCtx : this.channelContexts) {
@@ -45,5 +44,10 @@ public class NettyBCContext<BROADCAST> implements BCContext<BROADCAST> {
                 logger.error("Failed to broadcast Message={} to Channel={}", broadcast, channelCtx.channel(), e);
             }
         }
+    }
+
+    public void setSerializer(final BayLeafCodec.Serializer serializer, final Class<BROADCAST> broadcastType) {
+        this.serializer = serializer;
+        this.broadcastType = broadcastType;
     }
 }

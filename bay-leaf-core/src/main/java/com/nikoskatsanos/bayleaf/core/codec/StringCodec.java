@@ -18,16 +18,16 @@ public class StringCodec implements BayLeafCodec {
     static class Serializer implements BayLeafCodec.Serializer {
 
         @Override
-        public <OUT> byte[] serialize(final OUT msg) {
-            return ((String)msg).getBytes();
+        public <OUT> byte[] serialize(final OUT msg, final Class<OUT> outType) {
+            return ((String) msg).getBytes();
         }
     }
 
     static class Deserializer implements BayLeafCodec.Deserializer {
 
         @Override
-        public String deserialize(final byte[] bytes) {
-            return new String(bytes);
+        public <IN> IN deserialize(final byte[] bytes, final Class<IN> inType) {
+            return (IN) new String(bytes);
         }
     }
 }

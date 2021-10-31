@@ -34,15 +34,15 @@ public class NettyRRAContext<REQUEST, RESPONSE> implements RRAContext<REQUEST, R
     private final Dispatcher dispatcher;
 
     private Consumer<Request<REQUEST>> requestConsumer;
-    private Consumer<Void> ackConsumer;
-    private Consumer<Void> ackTimeoutConsumer;
+    private Consumer<Request<REQUEST>> ackConsumer;
+    private Consumer<Request<REQUEST>> ackTimeoutConsumer;
     private ScheduledFuture<?> timeoutTimer;
 
 
-    @Setter
     private BayLeafCodec.Serializer serializer;
-    @Setter
+    private Class<RESPONSE> responseType;
     private BayLeafCodec.Deserializer deserializer;
+    private Class<REQUEST> requestType;
 
     @Setter
     private long ackTimeout = 10;
@@ -60,33 +60,34 @@ public class NettyRRAContext<REQUEST, RESPONSE> implements RRAContext<REQUEST, R
     }
 
     public void request(final ApplicationMessage applicationMessage) {
-        REQUEST deserialize = this.deserializer.deserialize(applicationMessage.getData());
+        final REQUEST deserialize = this.deserializer.deserialize(applicationMessage.getData(), this.requestType);
         this.dispatcher.dispatch(() -> this.requestConsumer.accept(new Request<>(applicationMessage.getCorrelationId(), deserialize)));
     }
 
     @Override
-    public void onAck(final Consumer<Void> ackConsumer) {
+    public void onAck(final Consumer<Request<REQUEST>> ackConsumer) {
         this.ackConsumer = ackConsumer;
     }
 
-    public void ack() {
+    public void ack(final ApplicationMessage applicationMessage) {
         this.timeoutTimer.cancel(true);
-        this.dispatcher.dispatch(()-> this.ackConsumer.accept(null));
+        final REQUEST ackedRequest = this.deserializer.deserialize(applicationMessage.getData(), this.requestType);
+        this.dispatcher.dispatch(() -> this.ackConsumer.accept(new Request<>(applicationMessage.getCorrelationId(), ackedRequest)));
     }
 
     @Override
-    public void onAckTimeout(final Consumer<Void> ackTimeoutConsumer) {
+    public void onAckTimeout(final Consumer<Request<REQUEST>> ackTimeoutConsumer) {
         this.ackTimeoutConsumer = ackTimeoutConsumer;
     }
 
     @Override
     public void response(final Response<REQUEST, RESPONSE> response) {
-        final byte[] data = this.serializer.serialize(response.getResponse());
+        final byte[] data = this.serializer.serialize(response.getResponse(), this.responseType);
         final Message msg = new ApplicationMessage(response.getRequest().getId(), MessageType.DATA, this.serviceName, this.route, MessagingPattern.RRA, data);
         this.channelContext.executor().execute(() -> this.channelContext.writeAndFlush(new TextWebSocketFrame(JSON_CODEC.serializeToString(msg))));
 
         this.timeoutTimer = this.channelContext.executor().schedule(() -> {
-            this.ackTimeoutConsumer.accept(null);
+            this.ackTimeoutConsumer.accept(response.getRequest());
         }, this.ackTimeout, this.ackTimeoutUnit);
     }
 
@@ -94,5 +95,15 @@ public class NettyRRAContext<REQUEST, RESPONSE> implements RRAContext<REQUEST, R
     public void error(final int errorCode, final String errorMsg, final Response<REQUEST, RESPONSE> errorResponse) {
         final Message msg = new ErrorMessage(errorCode, errorMsg, errorResponse.getRequest().getId(), this.serviceName, this.route, MessagingPattern.RRA);
         this.channelContext.executor().execute(() -> this.channelContext.writeAndFlush(new TextWebSocketFrame(JSON_CODEC.serializeToString(msg))));
+    }
+
+    public void setSerializer(final BayLeafCodec.Serializer serializer, final Class<RESPONSE> responseType) {
+        this.serializer = serializer;
+        this.responseType = responseType;
+    }
+
+    public void setDeserializer(final BayLeafCodec.Deserializer deserializer, final Class<REQUEST> requestType) {
+        this.deserializer = deserializer;
+        this.requestType = requestType;
     }
 }

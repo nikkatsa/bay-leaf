@@ -6,14 +6,24 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Request-Response messaging pattern endpoint
+ * An annotation to be used for {@link com.nikoskatsanos.bayleaf.core.Connector} endpoints that are request-response
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD})
-public @interface RR{
+public @interface RR {
 
     /**
      * @return the name of the RR endpoint
      */
     String name();
+
+    /**
+     * @return type of incoming request
+     */
+    Class<?> requestType();
+
+    /**
+     * @return type of outgoing response
+     */
+    Class<?> responseType();
 }

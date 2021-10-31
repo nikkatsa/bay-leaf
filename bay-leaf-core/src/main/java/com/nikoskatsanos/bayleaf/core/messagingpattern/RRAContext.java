@@ -9,9 +9,9 @@ public interface RRAContext<REQUEST, RESPONSE> {
 
     void onRequest(final Consumer<Request<REQUEST>> requestConsumer);
 
-    void onAck(final Consumer<Void> ackConsumer);
+    void onAck(final Consumer<Request<REQUEST>> ackConsumer);
 
-    void onAckTimeout(final Consumer<Void> ackTimeoutConsumer);
+    void onAckTimeout(final Consumer<Request<REQUEST>> ackTimeoutConsumer);
 
     void response(final Response<REQUEST, RESPONSE> response);
 

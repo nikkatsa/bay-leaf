@@ -7,7 +7,7 @@ import java.lang.annotation.Target;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Request-Response-Ack (client side ack) messaging pattern endpoint
+ * An annotation to be used for {@link com.nikoskatsanos.bayleaf.core.Connector} endpoints that are request-response-ack(client side ack)
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD})
@@ -17,6 +17,16 @@ public @interface RRA {
      * @return the name of the RRA endpoint
      */
     String name();
+
+    /**
+     * @return type of incoming request
+     */
+    Class<?> requestType();
+
+    /**
+     * @return type of outgoing response
+     */
+    Class<?> responseType();
 
     /**
      * @return the timeout to wait for receiving the ack from the client

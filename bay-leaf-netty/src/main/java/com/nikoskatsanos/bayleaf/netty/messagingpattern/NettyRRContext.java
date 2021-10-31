@@ -16,7 +16,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import java.util.function.Consumer;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 
 @RequiredArgsConstructor
 public class NettyRRContext<REQUEST, RESPONSE> implements RRContext<REQUEST, RESPONSE> {
@@ -33,10 +32,10 @@ public class NettyRRContext<REQUEST, RESPONSE> implements RRContext<REQUEST, RES
 
     private Consumer<Request<REQUEST>> requestConsumer;
 
-    @Setter
     private BayLeafCodec.Serializer serializer;
-    @Setter
+    private Class<RESPONSE> responseType;
     private BayLeafCodec.Deserializer deserializer;
+    private Class<REQUEST> requestType;
 
     @Override
     public Session session() {
@@ -49,20 +48,30 @@ public class NettyRRContext<REQUEST, RESPONSE> implements RRContext<REQUEST, RES
     }
 
     public void request(final ApplicationMessage applicationMessage) {
-        REQUEST deserialize = this.deserializer.deserialize(applicationMessage.getData());
+        REQUEST deserialize = this.deserializer.deserialize(applicationMessage.getData(), this.requestType);
         this.dispatcher.dispatch(() -> this.requestConsumer.accept(new Request<>(applicationMessage.getCorrelationId(), deserialize)));
     }
 
     @Override
     public void response(final Response<REQUEST, RESPONSE> response) {
-        final byte[] data = this.serializer.serialize(response.getResponse());
+        final byte[] data = this.serializer.serialize(response.getResponse(), this.responseType);
         final Message msg = new ApplicationMessage(response.getRequest().getId(), MessageType.DATA, this.serviceName, this.route, MessagingPattern.RR, data);
-        this.channelContext.executor().execute(()-> this.channelContext.writeAndFlush(new TextWebSocketFrame(JSON_CODEC.serializeToString(msg))));
+        this.channelContext.executor().execute(() -> this.channelContext.writeAndFlush(new TextWebSocketFrame(JSON_CODEC.serializeToString(msg))));
     }
 
     @Override
     public void error(final int errorCode, final String errorMsg, final Response<REQUEST, RESPONSE> errorResponse) {
         final Message msg = new ErrorMessage(errorCode, errorMsg, errorResponse.getRequest().getId(), this.serviceName, this.route, MessagingPattern.RR);
         this.channelContext.executor().execute(() -> this.channelContext.writeAndFlush(new TextWebSocketFrame(JSON_CODEC.serializeToString(msg))));
+    }
+
+    public void setSerializer(final BayLeafCodec.Serializer serializer, final Class<RESPONSE> responseType) {
+        this.serializer = serializer;
+        this.responseType = responseType;
+    }
+
+    public void setDeserializer(final BayLeafCodec.Deserializer deserializer, final Class<REQUEST> requestType) {
+        this.deserializer = deserializer;
+        this.requestType = requestType;
     }
 }
