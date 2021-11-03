@@ -73,7 +73,7 @@
                                     <goal>copy-resources</goal>
                                 </goals>
                                 <configuration>
-                                    <outputDirectory>${project.build.directory}}/dist</outputDirectory>
+                                    <outputDirectory>${project.build.directory}/dist</outputDirectory>
                                     <resources>
                                         <resource>
                                             <directory>${project.basedir}/src/main/webapp/bay-leaf-example/dist</directory>
