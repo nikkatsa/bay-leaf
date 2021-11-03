@@ -62,9 +62,12 @@ export default {
 };
 </script>
 
-<style>
+<style lang="scss">
+  @import "~ag-grid-community/dist/styles/ag-grid.css";
+  @import "~ag-grid-community/dist/styles/ag-theme-alpine-dark.css";
+  @import "~ag-grid-community/dist/styles/ag-theme-balham-dark.css";
 
-#app {
+  #app {
     background-color: var(--v-background-base);
-}
+  }
 </style>

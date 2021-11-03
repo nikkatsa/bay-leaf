@@ -19,9 +19,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
@@ -67,16 +69,28 @@ public class MarketDataConnector extends Connector {
     @RequiredArgsConstructor
     class MarketDataGenerator {
 
+        private boolean started = false;
+        private int subscribers = 0;
+
         private final SharedSubscription<MarketDataRequest> marketDataRequest;
         private final StreamContext<MarketDataRequest, MarketDataResponse> streamContext;
 
         private double lastPrice = ThreadLocalRandom.current().nextDouble(1.1, 1.5);
+        private ScheduledFuture<?> periodicPublisher;
 
-        void start() {
-            this.publishPrice();
+        synchronized void start() {
+            if (!this.started) {
+                this.publishPrice();
+                this.started = true;
+            }
+            this.subscribers++;
         }
 
-        void stop() {
+        synchronized void stop() {
+            this.subscribers--;
+            if (this.subscribers == 0 && Objects.nonNull(this.periodicPublisher)) {
+                this.periodicPublisher.cancel(false);
+            }
         }
 
         void publishPrice() {
@@ -87,7 +101,7 @@ public class MarketDataConnector extends Connector {
             this.streamContext
                 .stream(new SharedSubscriptionData<>(this.marketDataRequest, new MarketDataResponse(this.marketDataRequest.getSubscription().getSymbol(), bid, ask)));
 
-            randomStreams.schedule(this::publishPrice, ThreadLocalRandom.current().nextLong(0, 5000L), TimeUnit.MILLISECONDS);
+            this.periodicPublisher = randomStreams.schedule(this::publishPrice, ThreadLocalRandom.current().nextLong(0, 5000L), TimeUnit.MILLISECONDS);
         }
     }
 }

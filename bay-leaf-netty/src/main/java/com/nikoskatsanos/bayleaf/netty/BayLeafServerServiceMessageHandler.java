@@ -62,7 +62,8 @@ public class BayLeafServerServiceMessageHandler extends SimpleChannelInboundHand
                 connector.onSessionOpened(contextHolder.sessionContext, new ContextFactory(session, serviceMessage.getServiceName(), connector, ctx));
                 ctx.channel().closeFuture().addListener(c -> {
                     connector.onSessionClosed(contextHolder.sessionContext);
-                    this.sessionContexts.remove(session.getSessionId());// will be called one time per service, but is fine
+                    ContextHolder remove = this.sessionContexts.remove(session.getSessionId());// will be called one time per service, but is fine
+
                 });
                 break;
             case HEARTBEAT:

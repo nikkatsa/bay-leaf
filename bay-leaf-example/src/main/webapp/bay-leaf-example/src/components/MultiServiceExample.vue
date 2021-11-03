@@ -50,7 +50,7 @@
                 </v-row>
                 <v-row no-gutters>
                   <v-col>
-                    <v-btn class="pa-0 ma-0" style="height: 80px" elevation="3" block text :color="bidPriceColor" @click="trade">
+                    <v-btn class="pa-0 ma-0 rounded-bl-xl" style="height: 80px" elevation="3" block text :color="bidPriceColor" @click="trade('BID')">
                       {{ lastBidPrice.toFixed(4) }} 
                       <v-icon :color="bidPriceColor">
                         {{ bidMarketTrendMdiIcon }}
@@ -59,7 +59,7 @@
                   </v-col>
 
                   <v-col>
-                    <v-btn class="pa-0 ma-0" style="height: 80px" elevation="3" block text :color="askPriceColor">
+                    <v-btn class="pa-0 ma-0 rounded-br-xl" style="height: 80px" elevation="3" block text :color="askPriceColor" @click="trade('ASK')">
                       {{ lastAskPrice.toFixed(4) }} 
                       <v-icon :color="askPriceColor">
                         {{ askMarketTrendMdiIcon }}
@@ -71,17 +71,29 @@
             </v-card-text>
         </v-card>
     </v-row>
+
+    <v-row class="d-flex align-end justify-end">
+        <ag-grid-vue style="width: 100%; height: 300px"
+          class="ag-theme-balham-dark"
+          :columnDefs="blotterColumnDefs"
+          :rowData="blotterData">
+        </ag-grid-vue>
+      </v-row>
   </v-container>
 </template>
 
 <script>
 import { createClient } from "./../bayleaf/bayleafClient";
 import { JsonCodec } from "../bayleaf/codec/codecs";
-import { TradeRequest, TradeResponse } from "../model/trade";
+import { TradeRequest, TradeResponse, TradeBlotterRequest } from "../model/trade";
+import { AgGridVue } from "ag-grid-vue";
 
 export default {
     name: 'MultiServiceExample',
 
+    components: {
+      AgGridVue
+    },
     data: () => {
         return {
             url: "wss://localhost:9999",
@@ -112,9 +124,22 @@ export default {
             tradeId: 0,
             quantity: 0,
             isTradeInProgress: false,
+            isBlotterSubscribed: false,
+
+            blotterData: [],
         }
     },
 
+    beforeMount() {
+        this.blotterColumnDefs = [
+          { field: "timestamp"},
+          { field: "id" },
+          { field: "symbol" },
+          { field: "quantity" },
+          { field: "price" },
+          { field: "side" },
+        ];
+      },
     watch: {
       ccy: function (newVal, oldVal) {
         if(oldVal) {
@@ -167,6 +192,11 @@ export default {
     },
     onTradeServiceHeartbeat() {
         this.isTradeServiceActive = true;
+
+        if(!this.isBlotterSubscribed) {
+          this.tradeService.privateStream("blotter", new TradeBlotterRequest(), {initialData: this.onTradeBlotterInitialData, data: this.onTradeBlotterData});
+          this.isBlotterSubscribed =  true;
+        }
     },
 
     subscribe(symbol) {
@@ -208,9 +238,9 @@ export default {
         this.lastAskPrice = marketData.askPrice;
     },
 
-    trade() {
+    trade(side) {
         this.isTradeInProgress = true;
-        this.tradeService.requestResponseAck('trade', new TradeRequest(++this.tradeId, this.ccy, this.quantity, this.price))
+        this.tradeService.requestResponseAck('trade', new TradeRequest(++this.tradeId, this.ccy, this.quantity, this.price, side))
             .then( responseWithAck => {
                 this.isTradeInProgress = false;
                 responseWithAck.ack();
@@ -220,6 +250,17 @@ export default {
               this.isTradeInProgress = false;
             })
     },
+    onTradeBlotterInitialData(tradeBlotterResponse) {
+      console.log(tradeBlotterResponse);
+      this.blotterData = [].concat( tradeBlotterResponse.trades.map(t => {  return {timestamp: t.timestamp, id: t.id, symbol: t.symbol, quantity: t.quantity, price: t.price, side: this.translateSide(t.side)}; }));
+    },
+    onTradeBlotterData(tradeBlotterResponse) {
+      console.log(tradeBlotterResponse);
+      this.blotterData.push(...tradeBlotterResponse.trades.map(t => {  return {timestamp: t.timestamp, id: t.id, symbol: t.symbol, quantity: t.quantity, price: t.price, side: this.translateSide(t.side)}; }))
+    },
+    translateSide(side) {
+      return side === 'BID' ? 'SELL' : 'BUY';
+    }
     }
 }
 </script>

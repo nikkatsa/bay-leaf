@@ -1,11 +1,12 @@
 
 class TradeRequest {
 
-    constructor(id, symbol, quantity, price) {
+    constructor(id, symbol, quantity, price, side) {
         this.id=  id;
         this.symbol = symbol;
         this.quantity = quantity;
         this.price = price;
+        this.side = side;
     }
 }
 
@@ -17,4 +18,9 @@ class TradeResponse {
     }
 }
 
-export {TradeRequest, TradeResponse};
+class TradeBlotterRequest {
+    constructor() {
+
+    }
+}
+export {TradeRequest, TradeResponse, TradeBlotterRequest };
