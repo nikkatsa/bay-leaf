@@ -1,5 +1,5 @@
 <template>
-  <v-app :style="{background: $vuetify.theme.themes['dark'].background}">
+  <v-app>
     <v-app-bar
       app
       color="primary"
@@ -66,8 +66,4 @@ export default {
   @import "~ag-grid-community/dist/styles/ag-grid.css";
   @import "~ag-grid-community/dist/styles/ag-theme-alpine-dark.css";
   @import "~ag-grid-community/dist/styles/ag-theme-balham-dark.css";
-
-  #app {
-    background-color: var(--v-background-base);
-  }
 </style>

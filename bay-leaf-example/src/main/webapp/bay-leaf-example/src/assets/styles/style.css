@@ -1,1 +1,7 @@
-.background: '#333136'
+.theme--dark.v-application {
+    background: #282E39;
+}
+
+.theme--dark.v-card {
+    background-color: #2F3542;
+}
