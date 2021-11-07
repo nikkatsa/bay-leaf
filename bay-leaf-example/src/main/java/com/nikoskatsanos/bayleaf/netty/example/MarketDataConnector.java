@@ -62,7 +62,10 @@ public class MarketDataConnector extends Connector {
         });
         ssContext.onSubscriptionClose(sub -> {
             logger.info("Received MarketDataUnsubRequest={}, Session={}", sub.getSubscription(), ssContext.session());
-
+            final MarketDataGenerator marketDataGenerator = this.streamers.get(sub.getSubscription().getSymbol());
+            if (Objects.nonNull(marketDataGenerator)) {
+                marketDataGenerator.stop();
+            }
         });
     }
 
@@ -90,6 +93,7 @@ public class MarketDataConnector extends Connector {
             this.subscribers--;
             if (this.subscribers == 0 && Objects.nonNull(this.periodicPublisher)) {
                 this.periodicPublisher.cancel(false);
+                this.started = false;
             }
         }
 

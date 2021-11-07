@@ -13,6 +13,6 @@ public class NullAuthenticator implements Authenticator<UsernamePassword> {
         Objects.requireNonNull(token.getUsername(), "Username must not be null");
         Objects.requireNonNull(token.getPassword(), "Password must not be null");
         logger.info("Authenticating Token={}", token);
-        return new User(token.getUsername(), token.getPassword());
+        return new User(token.getUsername(), token.getUsername());
     }
 }

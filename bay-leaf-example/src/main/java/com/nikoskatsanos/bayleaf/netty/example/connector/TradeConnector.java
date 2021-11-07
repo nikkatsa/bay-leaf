@@ -59,9 +59,11 @@ public class TradeConnector extends Connector {
     @PS(name = "blotter", subscriptionType = TradeBlotterRequest.class, dataType = TradeBlotterResponse.class)
     public void blotter(final PSContext<TradeBlotterRequest, TradeBlotterResponse> context) {
         context.onSubscription(sub -> {
+            logger.info("Subscribing for TradeBlotterRequest={}, Session={}", sub, context.session());
             this.tradeServer.streamTrades(sub, context);
         });
         context.onClose(sub -> {
+            logger.info("UnSubscribing for TradeBlotterRequest={}, Session={}", sub, context.session());
             this.tradeServer.stopStreamTrades(sub, context);
         });
     }

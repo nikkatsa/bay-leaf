@@ -50,7 +50,7 @@
                 </v-row>
                 <v-row no-gutters>
                   <v-col>
-                    <v-btn class="pa-0 ma-0 rounded-bl-xl" style="height: 80px" elevation="3" block text :color="bidPriceColor" @click="trade('BID')">
+                    <v-btn class="pa-0 ma-0 rounded-bl-xl" style="height: 80px" elevation="3" block text :color="bidPriceColor" @click="trade(lastBidPrice, 'BID')">
                       {{ lastBidPrice.toFixed(4) }} 
                       <v-icon :color="bidPriceColor">
                         {{ bidMarketTrendMdiIcon }}
@@ -59,7 +59,7 @@
                   </v-col>
 
                   <v-col>
-                    <v-btn class="pa-0 ma-0 rounded-br-xl" style="height: 80px" elevation="3" block text :color="askPriceColor" @click="trade('ASK')">
+                    <v-btn class="pa-0 ma-0 rounded-br-xl" style="height: 80px" elevation="3" block text :color="askPriceColor" @click="trade(lastAskPrice, 'ASK')">
                       {{ lastAskPrice.toFixed(4) }} 
                       <v-icon :color="askPriceColor">
                         {{ askMarketTrendMdiIcon }}
@@ -142,10 +142,12 @@ export default {
       },
     watch: {
       ccy: function (newVal, oldVal) {
-        if(oldVal) {
+        if(oldVal && this.isConnected) {
           this.unsubscrive(oldVal);
         }
-        this.subscribe(newVal);
+        if(this.isConnected){
+          this.subscribe(newVal);
+        }
       }      
     },
     methods: {
@@ -178,6 +180,13 @@ export default {
       this.connectionInProgress = isReconnecting;
       this.isMarketServiceDataActive = false;
       this.isTradeServiceActive = true;
+      this.isBlotterSubscribed = false;
+
+      this.lastBidPrice = 0;
+      this.lastAskPrice = 0;
+      this.blotterData = [];
+      this.ccy = null;
+      this.ccyList = [];
     },
     onMarketDataServiceHeartbeat() {
       this.isMarketServiceDataActive = true;
@@ -200,6 +209,7 @@ export default {
     },
 
     subscribe(symbol) {
+
       const subscriptionId = this.marketDataService.sharedStream("stream", { symbol: symbol }, {initialData: this.onMarketData, data: this.onMarketData});
       this.activeSubscriptions.set(symbol, subscriptionId);
     },
@@ -238,9 +248,9 @@ export default {
         this.lastAskPrice = marketData.askPrice;
     },
 
-    trade(side) {
+    trade(price, side) {
         this.isTradeInProgress = true;
-        this.tradeService.requestResponseAck('trade', new TradeRequest(++this.tradeId, this.ccy, this.quantity, this.price, side))
+        this.tradeService.requestResponseAck('trade', new TradeRequest(++this.tradeId, this.ccy, this.quantity, price, side))
             .then( responseWithAck => {
                 this.isTradeInProgress = false;
                 responseWithAck.ack();

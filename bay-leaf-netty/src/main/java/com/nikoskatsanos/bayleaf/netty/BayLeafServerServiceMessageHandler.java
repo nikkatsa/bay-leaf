@@ -28,6 +28,7 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.util.AttributeKey;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -61,9 +62,11 @@ public class BayLeafServerServiceMessageHandler extends SimpleChannelInboundHand
                 final ContextHolder contextHolder = this.sessionContexts.computeIfAbsent(session.getSessionId(), k -> new ContextHolder(new NettySessionContext(session, ctx)));
                 connector.onSessionOpened(contextHolder.sessionContext, new ContextFactory(session, serviceMessage.getServiceName(), connector, ctx));
                 ctx.channel().closeFuture().addListener(c -> {
-                    connector.onSessionClosed(contextHolder.sessionContext);
-                    ContextHolder remove = this.sessionContexts.remove(session.getSessionId());// will be called one time per service, but is fine
-
+                    final ContextHolder removed = this.sessionContexts.remove(session.getSessionId());// will be called one time per service, but is fine
+                    if (Objects.nonNull(removed)) {
+                        removed.destroy();
+                    }
+                    this.dispatchingStrategy.dispatcher(session).dispatch(() -> connector.onSessionClosed(contextHolder.sessionContext));
                 });
                 break;
             case HEARTBEAT:
@@ -190,5 +193,14 @@ public class BayLeafServerServiceMessageHandler extends SimpleChannelInboundHand
         private final Map<String, NettyRRAContext> rraContextByName = new HashMap<>();
         private final Map<String, NettyPSContext> psContextByName = new HashMap<>();
         private final Map<String, NettySSContext> ssContextByName = new HashMap<>();
+
+        void destroy() {
+            this.rrContextByName.clear();
+            this.rraContextByName.clear();
+            this.psContextByName.values().forEach(NettyPSContext::destroy);
+            this.psContextByName.clear();
+            this.ssContextByName.values().forEach(NettySSContext::destroy);
+            this.ssContextByName.clear();
+        }
     }
 }

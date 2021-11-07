@@ -12,6 +12,8 @@ import com.nikoskatsanos.bayleaf.netty.codec.NettyJsonCodec;
 import com.nikoskatsanos.bayleaf.netty.dispatch.DispatchingStrategy.Dispatcher;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 import lombok.RequiredArgsConstructor;
@@ -39,6 +41,8 @@ public class NettyPSContext<SUBSCRIPTION, DATA> implements PSContext<SUBSCRIPTIO
     private volatile Consumer<Subscription<SUBSCRIPTION>> subscriptionConsumer;
     private volatile Consumer<Subscription<SUBSCRIPTION>> closeConsumer;
 
+    private final List<Subscription<SUBSCRIPTION>> activePSSubscriptions = new ArrayList<>();
+
     @Override
     public Session session() {
         return this.session;
@@ -53,6 +57,7 @@ public class NettyPSContext<SUBSCRIPTION, DATA> implements PSContext<SUBSCRIPTIO
         final SUBSCRIPTION subscriptionData = this.deserializer.deserialize(applicationMessage.getData(), this.subscriptionType);
         final Subscription<SUBSCRIPTION> subscription = new Subscription<>(applicationMessage.getCorrelationId(), subscriptionData);
         if (Objects.nonNull(this.subscriptionConsumer)) {
+            this.activePSSubscriptions.add(subscription);
             this.dispatcher.dispatch(() -> this.subscriptionConsumer.accept(subscription));
         } else {
             logger.warn("Subscription consumer not set for Service={}, Route={}, Session={}. Discarding Subscription={}", this.serviceName, this.route, this.session, subscription);
@@ -68,8 +73,15 @@ public class NettyPSContext<SUBSCRIPTION, DATA> implements PSContext<SUBSCRIPTIO
         if (Objects.nonNull(this.closeConsumer)) {
             final SUBSCRIPTION subscriptionData = this.deserializer.deserialize(appMsg.getData(), this.subscriptionType);
             final Subscription<SUBSCRIPTION> subscription = new Subscription<>(appMsg.getCorrelationId(), subscriptionData);
+            this.activePSSubscriptions.remove(subscription);
             this.dispatcher.dispatch(() -> this.closeConsumer.accept(subscription));
         }
+    }
+
+    public void destroy() {
+        logger.info("Destroying {} for Session={}", NettyPSContext.class.getSimpleName(), this.session);
+        this.activePSSubscriptions.forEach(sub -> this.dispatcher.dispatch(() -> this.closeConsumer.accept(sub)));
+        this.activePSSubscriptions.clear();
     }
 
     @Override

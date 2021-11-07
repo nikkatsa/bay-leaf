@@ -12,6 +12,7 @@ import com.nikoskatsanos.bayleaf.netty.codec.NettyJsonCodec;
 import com.nikoskatsanos.bayleaf.netty.dispatch.DispatchingStrategy.Dispatcher;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,6 +47,7 @@ public class NettySSContext<SUBSCRIPTION, DATA> implements SSContext<SUBSCRIPTIO
     private volatile Consumer<SharedSubscription<SUBSCRIPTION>> closeConsumer;
 
     private final Map<String, String> subscriptionHashes = new HashMap<>();
+    private final List<SharedSubscription<SUBSCRIPTION>> activeSSSubscriptions = new ArrayList<>();
 
     @Override
     public Session session() {
@@ -73,6 +75,7 @@ public class NettySSContext<SUBSCRIPTION, DATA> implements SSContext<SUBSCRIPTIO
         final NettyStreamContext<SUBSCRIPTION, DATA> sharedStreamContext = NettyStreamContext.create(subscription, this.serviceName, this.route, this.serializer, this.dataType);
         sharedStreamContext.addChannelContext(appMsg.getCorrelationId(), this.channelCtx);
         if (Objects.nonNull(this.subscriptionConsumer)) {
+            this.activeSSSubscriptions.add(sharedSubscription);
             this.dispatcher.dispatch(() -> this.subscriptionConsumer.accept(sharedSubscription));
         }
     }
@@ -97,8 +100,15 @@ public class NettySSContext<SUBSCRIPTION, DATA> implements SSContext<SUBSCRIPTIO
             final NettyStreamContext<SUBSCRIPTION, DATA> sharedStreamContext = NettyStreamContext.create(subscription, this.serviceName, this.route, this.serializer, this.dataType);
             sharedStreamContext.removeChannelContext(removedSubscriptionId, this.channelCtx);
 
+            this.activeSSSubscriptions.remove(sharedSubscription);
             this.dispatcher.dispatch(() -> this.closeConsumer.accept(sharedSubscription));
         }
+    }
+
+    public void destroy() {
+        logger.info("Destroying {} for Session={}", NettySSContext.class.getSimpleName(), this.session);
+        this.activeSSSubscriptions.forEach(sub -> this.dispatcher.dispatch(() -> this.closeConsumer.accept(sub)));
+        this.activeSSSubscriptions.clear();
     }
 
     @Override
