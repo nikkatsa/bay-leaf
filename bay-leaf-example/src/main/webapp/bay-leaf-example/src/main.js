@@ -12,8 +12,8 @@ const app = new Vue({
 app.$vuetify.theme.dark = true;
 
 app.$vuetify.theme.themes.dark = {
-  primary: '#3f51b5',
-  secondary: '#FFF',
+  primary: '#BB86FC',
+  secondary: '#03DAC5',
   accent: '#5F94F5',
   error: '#f44336',
   warning: '#ff9800',
@@ -23,4 +23,3 @@ app.$vuetify.theme.themes.dark = {
 };
 
 require("./assets/styles/style.css");
-console.log(app.$vuetify.theme.themes.dark);

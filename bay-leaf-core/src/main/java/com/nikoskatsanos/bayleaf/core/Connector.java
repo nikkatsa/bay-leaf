@@ -6,7 +6,6 @@ import com.nikoskatsanos.bayleaf.core.codec.BayLeafCodec.Serializer;
 import com.nikoskatsanos.bayleaf.core.codec.CodecDetails;
 import com.nikoskatsanos.bayleaf.core.messagingpattern.BC;
 import com.nikoskatsanos.bayleaf.core.messagingpattern.BCContext;
-import com.nikoskatsanos.bayleaf.core.messagingpattern.MessagingPattern;
 import com.nikoskatsanos.bayleaf.core.messagingpattern.MessagingPatternDetails;
 import com.nikoskatsanos.bayleaf.core.messagingpattern.PS;
 import com.nikoskatsanos.bayleaf.core.messagingpattern.PSContext;
@@ -18,13 +17,13 @@ import com.nikoskatsanos.bayleaf.core.messagingpattern.MessagingPatternContextFa
 import com.nikoskatsanos.bayleaf.core.messagingpattern.SS;
 import com.nikoskatsanos.bayleaf.core.messagingpattern.SSContext;
 import com.nikoskatsanos.bayleaf.core.props.BayLeafProps;
+import com.nikoskatsanos.bayleaf.core.props.SessionCloseCodes;
 import com.nikoskatsanos.bayleaf.core.util.BayLeafThreadFactory;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -54,12 +53,13 @@ public abstract class Connector {
     private final Map<String, SessionContext> sessions = new ConcurrentHashMap<>();
     private final Map<String, Heartbeater> heartbeaters = new ConcurrentHashMap<>();
 
-    private final ScheduledExecutorService heartbeatThreads = Executors.newScheduledThreadPool(4, new BayLeafThreadFactory("heartbeater"));
+    private final ScheduledExecutorService heartbeatThreads;
 
     public Connector(String name, Deserializer deserializer, Serializer serializer) {
         this.name = name;
         this.deserializer = deserializer;
         this.serializer = serializer;
+        this.heartbeatThreads = Executors.newScheduledThreadPool(4, new BayLeafThreadFactory(this.name + "-heartbeater"));
     }
 
     public void start() {
@@ -86,6 +86,10 @@ public abstract class Connector {
 
     public void stop() {
         logger.info("Stopping Connector={}", getClass().getSimpleName());
+        for (final String sessionId : this.sessions.keySet()) {
+            this.sessions.remove(sessionId).closeSession(SessionCloseCodes.CONNECTOR_CLOSE);
+            this.heartbeaters.remove(sessionId).stop();
+        }
     }
 
     public void onSessionOpened(final SessionContext sessionContext, final MessagingPatternContextFactory messagingPatternContextFactory) {
@@ -253,7 +257,7 @@ public abstract class Connector {
     @RequiredArgsConstructor
     class Heartbeater {
 
-        private final AtomicInteger heartbeatId = new AtomicInteger();
+        private final AtomicInteger heartbeatId = new AtomicInteger(-1);
         private final SessionContext sessionContext;
         private volatile ScheduledFuture<?> heartbeatSchedule;
         private volatile Heartbeat incomingHeartbeat;
@@ -262,9 +266,12 @@ public abstract class Connector {
             this.heartbeatSchedule = heartbeatThreads.scheduleAtFixedRate(() -> {
                 try {
                     if (!this.validateIncomingHeartbeat()) {
-                        logger.warn("Invalid client Heartbeat={}, LastServerHeartbeatId={}", this.incomingHeartbeat, this.heartbeatId.get());
+                        logger.warn("Invalid heartbeat received for Service={}, Session={}, Heartbeat={}, LastServerHeartbeatId={}",
+                            Connector.this.name, this.sessionContext.getSession(), this.incomingHeartbeat, this.heartbeatId.get());
+                        this.sessionContext.closeSession(SessionCloseCodes.INVALID_HEARTBEAT);
+                        return;
                     }
-                    final Heartbeat heartbeat = new Heartbeat(Connector.this.name, heartbeatId.getAndIncrement(), System.currentTimeMillis());
+                    final Heartbeat heartbeat = new Heartbeat(Connector.this.name, heartbeatId.incrementAndGet(), System.currentTimeMillis());
                     this.sessionContext.heartbeat(heartbeat);
                 } catch (final Exception e) {
                     logger.error("Exception while sending heartbeat to Session={}", this.sessionContext.getSession(), e);
@@ -283,12 +290,12 @@ public abstract class Connector {
         }
 
         boolean validateIncomingHeartbeat() {
-            if (this.heartbeatId.get() == 0) {
+            if (this.heartbeatId.get() == -1) {
                 return true;
-            } else if (this.heartbeatId.get() > 0 && Objects.isNull(this.incomingHeartbeat)) {
+            } else if (this.heartbeatId.get() >= 0 && Objects.isNull(this.incomingHeartbeat)) {
                 return false;
             }
-            return this.heartbeatId.get() - 1 == this.incomingHeartbeat.getId();
+            return this.heartbeatId.get() == this.incomingHeartbeat.getId();
         }
     }
 }

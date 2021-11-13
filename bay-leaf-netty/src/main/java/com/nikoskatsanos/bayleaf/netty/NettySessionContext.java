@@ -43,6 +43,12 @@ public class NettySessionContext implements SessionContext {
         this.heartbeatConsumers.put(serviceName, heartbeatConsumer);
     }
 
+    @Override
+    public void closeSession(final byte closeCode) {
+        logger.info("Closing Session={}, CloseCode={}", this.session, closeCode);
+        this.channelCtx.channel().close();
+    }
+
     public void heartbeatIn(final Heartbeat heartbeat) {
         final Consumer<Heartbeat> heartbeatConsumer = this.heartbeatConsumers.get(heartbeat.getServiceName());
         if (Objects.nonNull(heartbeatConsumer)) {

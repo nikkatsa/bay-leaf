@@ -2,7 +2,6 @@
   <v-app>
     <v-app-bar
       app
-      color="primary"
       dark
     >
 
@@ -20,8 +19,8 @@
 
       <v-spacer></v-spacer>
       <v-btn-toggle v-model="toggle" mandatory>
-        <v-btn>Simple</v-btn>
-        <v-btn>Complex</v-btn>
+        <v-btn color="primary">Simple</v-btn>
+        <v-btn color="primary">Complex</v-btn>
       </v-btn-toggle>
     </v-app-bar>
 

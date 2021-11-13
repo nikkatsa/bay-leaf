@@ -9,4 +9,6 @@ public interface SessionContext {
     void heartbeat(final Heartbeat heartbeat);
 
     void onHeartbeat(final String serviceName, final Consumer<Heartbeat> heartbeatConsumer);
+
+    void closeSession(final byte closeCode);
 }
