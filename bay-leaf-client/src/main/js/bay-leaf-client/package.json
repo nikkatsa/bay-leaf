@@ -1,0 +1,14 @@
+{
+  "name": "bay-leaf-client",
+  "version": "1.0.0",
+  "description": "Javascript client library for BayLeaf Server",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Nikolaos Katsanos <nikolaos.katsanos@gmail.com>",
+  "license": "ISC",
+  "dependencies": {
+    "uuid4": "^2.0.2"
+  }
+}

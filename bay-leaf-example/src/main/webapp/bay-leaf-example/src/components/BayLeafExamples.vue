@@ -205,8 +205,7 @@
 </template>
 
 <script>
-import { createClient } from "./../bayleaf/bayleafClient";
-import { StringCodec } from "../bayleaf/codec/codecs";
+import { createClient, StringCodec } from "bay-leaf-client";
 
 export default {
   name: "BayLeafExamples",

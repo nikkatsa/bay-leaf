@@ -13,6 +13,7 @@
         <module>bay-leaf-core</module>
         <module>bay-leaf-netty</module>
         <module>bay-leaf-example</module>
+        <module>bay-leaf-client</module>
     </modules>
 
     <name>bay-leaf</name>

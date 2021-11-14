@@ -83,10 +83,9 @@
 </template>
 
 <script>
-import { createClient } from "./../bayleaf/bayleafClient";
-import { JsonCodec } from "../bayleaf/codec/codecs";
 import { TradeRequest, TradeResponse, TradeBlotterRequest } from "../model/trade";
 import { AgGridVue } from "ag-grid-vue";
+import { createClient, JsonCodec } from "bay-leaf-client";
 
 export default {
     name: 'MultiServiceExample',
