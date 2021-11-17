@@ -12,7 +12,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>bay-leaf-netty</artifactId>
-    <description>BayLeaf server with a Netty impementatation</description>
+    <description>BayLeaf server with a Netty implementation</description>
 
     <properties>
     </properties>
@@ -27,6 +27,11 @@
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-server</artifactId>
         </dependency>
     </dependencies>
 </project>
