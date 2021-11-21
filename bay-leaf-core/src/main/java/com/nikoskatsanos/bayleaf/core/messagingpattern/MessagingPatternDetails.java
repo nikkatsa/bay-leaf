@@ -12,4 +12,9 @@ public class MessagingPatternDetails {
     private final Method method;
     private final Class<?> inType;
     private final Class<?> outType;
+    private final Class<?> snapshotType;
+
+    public MessagingPatternDetails(String endpointName, Method method, Class<?> inType, Class<?> outType) {
+        this(endpointName, method, inType, outType, null);
+    }
 }

@@ -21,7 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @RequiredArgsConstructor
 @Slf4j
-public class NettyPSContext<SUBSCRIPTION, DATA> implements PSContext<SUBSCRIPTION, DATA> {
+public class NettyPSContext<SUBSCRIPTION, INITIAL_DATA, DATA> implements PSContext<SUBSCRIPTION, INITIAL_DATA, DATA> {
 
     private static final NettyJsonCodec JSON_CODEC = NettyJsonCodec.instance();
 
@@ -35,6 +35,7 @@ public class NettyPSContext<SUBSCRIPTION, DATA> implements PSContext<SUBSCRIPTIO
 
     private BayLeafCodec.Serializer serializer;
     private Class<DATA> dataType;
+    private Class<INITIAL_DATA> initialDataType;
     private BayLeafCodec.Deserializer deserializer;
     private Class<SUBSCRIPTION> subscriptionType;
 
@@ -85,8 +86,10 @@ public class NettyPSContext<SUBSCRIPTION, DATA> implements PSContext<SUBSCRIPTIO
     }
 
     @Override
-    public void initialData(final SubscriptionData<SUBSCRIPTION, DATA> snapshot) {
-        this.sendData(snapshot, MessageType.INITIAL_DATA);
+    public void initialData(final SubscriptionData<SUBSCRIPTION, INITIAL_DATA> snapshot) {
+        final byte[] serialized = this.serializer.serialize(snapshot.getData(), this.initialDataType);
+        final ApplicationMessage applicationMessage = new ApplicationMessage(snapshot.getSubscription().getId(), MessageType.INITIAL_DATA, this.serviceName, this.route, MessagingPattern.PS, serialized);
+        this.channelContext.executor().execute(() -> this.channelContext.writeAndFlush(new TextWebSocketFrame(JSON_CODEC.serializeToString(applicationMessage))));
     }
 
     @Override
@@ -101,13 +104,14 @@ public class NettyPSContext<SUBSCRIPTION, DATA> implements PSContext<SUBSCRIPTIO
         this.channelContext.executor().execute(() -> this.channelContext.writeAndFlush(new TextWebSocketFrame(JSON_CODEC.serializeToString(applicationMessage))));
     }
 
-    public void setSerializer(final BayLeafCodec.Serializer serializer, final Class<SUBSCRIPTION> inType) {
+    public void setSerializer(final BayLeafCodec.Serializer serializer, final Class<INITIAL_DATA> initialDataType, final Class<DATA> outType) {
         this.serializer = serializer;
-        this.subscriptionType = inType;
+        this.initialDataType = initialDataType;
+        this.dataType = outType;
     }
 
-    public void setDeserializer(final BayLeafCodec.Deserializer deserializer, final Class<DATA> outType) {
+    public void setDeserializer(final BayLeafCodec.Deserializer deserializer, final Class<SUBSCRIPTION> inType) {
         this.deserializer = deserializer;
-        this.dataType = outType;
+        this.subscriptionType = inType;
     }
 }

@@ -51,8 +51,8 @@ public class MarketDataConnector extends Connector {
         });
     }
 
-    @SS(name = "stream", subscriptionType = MarketDataRequest.class, dataType = MarketDataResponse.class)
-    public void marketData(final SSContext<MarketDataRequest, MarketDataResponse> ssContext) {
+    @SS(name = "stream", subscriptionType = MarketDataRequest.class, initialDataType = MarketDataResponse.class, dataType = MarketDataResponse.class)
+    public void marketData(final SSContext<MarketDataRequest, MarketDataResponse, MarketDataResponse> ssContext) {
         ssContext.onSubscription(sub -> {
             logger.info("Received MarketDataRequest={}, Session={}", sub.getSubscription(), ssContext.session());
 

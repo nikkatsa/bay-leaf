@@ -7,9 +7,10 @@ import java.util.function.Consumer;
  * Represents a shared stream context, for a particular {@link Session} on a particular endpoint
  *
  * @param <SUBSCRIPTION> Shared subscription type
+ * @param <INITIAL_DATA> Published initial(snapshot) data type
  * @param <DATA> Published data type
  */
-public interface SSContext<SUBSCRIPTION, DATA> {
+public interface SSContext<SUBSCRIPTION, INITIAL_DATA, DATA> {
 
     /**
      * @return The session the context refers to
@@ -30,7 +31,7 @@ public interface SSContext<SUBSCRIPTION, DATA> {
     /**
      * @param snapshot data to be send to the remote end. This {@link SharedSubscriptionData} will only be send to the corresponding {@link Session} and not to all subscribers
      */
-    void snapshot(final SharedSubscriptionData<SUBSCRIPTION, DATA> snapshot);
+    void snapshot(final SharedSubscriptionData<SUBSCRIPTION, INITIAL_DATA> snapshot);
 
     /**
      * @param subscription A subscription to a shared stream

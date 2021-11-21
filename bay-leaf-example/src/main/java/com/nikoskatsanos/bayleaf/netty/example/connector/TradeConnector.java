@@ -12,7 +12,6 @@ import com.nikoskatsanos.bayleaf.core.messagingpattern.Subscription;
 import com.nikoskatsanos.bayleaf.core.messagingpattern.SubscriptionData;
 import com.nikoskatsanos.bayleaf.netty.example.model.Trade;
 import com.nikoskatsanos.bayleaf.netty.example.model.TradeBlotterRequest;
-import com.nikoskatsanos.bayleaf.netty.example.model.TradeBlotterResponse;
 import com.nikoskatsanos.bayleaf.netty.example.model.TradeRequest;
 import com.nikoskatsanos.bayleaf.netty.example.model.TradeResponse;
 import java.util.ArrayList;
@@ -56,8 +55,8 @@ public class TradeConnector extends Connector {
         });
     }
 
-    @PS(name = "blotter", subscriptionType = TradeBlotterRequest.class, dataType = TradeBlotterResponse.class)
-    public void blotter(final PSContext<TradeBlotterRequest, TradeBlotterResponse> context) {
+    @PS(name = "blotter", subscriptionType = TradeBlotterRequest.class, initialDataType = Trade[].class, dataType = Trade.class)
+    public void blotter(final PSContext<TradeBlotterRequest, Trade[], Trade> context) {
         context.onSubscription(sub -> {
             logger.info("Subscribing for TradeBlotterRequest={}, Session={}", sub, context.session());
             this.tradeServer.streamTrades(sub, context);
@@ -98,17 +97,17 @@ public class TradeConnector extends Connector {
 
             final SubscriptionAndContext blotterContext = this.blotterStreams.get(context.session().getUser().getUserId());
             if (Objects.nonNull(blotterContext)) {
-                blotterContext.context.data(new SubscriptionData<>(blotterContext.subscription, new TradeBlotterResponse(Collections.singletonList(trade))));
+                blotterContext.context.data(new SubscriptionData<>(blotterContext.subscription, trade));
             }
         }
 
-        void streamTrades(final Subscription<TradeBlotterRequest> sub, final PSContext<TradeBlotterRequest, TradeBlotterResponse> context) {
+        void streamTrades(final Subscription<TradeBlotterRequest> sub, final PSContext<TradeBlotterRequest, Trade[], Trade> context) {
             this.blotterStreams.putIfAbsent(context.session().getUser().getUserId(), new SubscriptionAndContext(sub, context));
             final List<Trade> trades = Optional.ofNullable(this.tradesByUser.get(context.session().getUser().getUserId())).orElse(Collections.emptyList());
-            context.initialData(new SubscriptionData<>(sub, new TradeBlotterResponse(trades)));
+            context.initialData(new SubscriptionData<>(sub, trades.toArray(new Trade[0])));
         }
 
-        void stopStreamTrades(final Subscription<TradeBlotterRequest> sub, final PSContext<TradeBlotterRequest, TradeBlotterResponse> context) {
+        void stopStreamTrades(final Subscription<TradeBlotterRequest> sub, final PSContext<TradeBlotterRequest, Trade[], Trade> context) {
             this.blotterStreams.remove(context.session().getUser().getUserId());
         }
     }
@@ -117,6 +116,6 @@ public class TradeConnector extends Connector {
     @AllArgsConstructor
     class SubscriptionAndContext {
         private final Subscription<TradeBlotterRequest> subscription;
-        private final PSContext<TradeBlotterRequest, TradeBlotterResponse> context;
+        private final PSContext<TradeBlotterRequest, Trade[], Trade> context;
     }
 }

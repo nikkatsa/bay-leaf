@@ -19,6 +19,7 @@ target/
 
 # Node
 node_modules/
+**/resources/public/**
 **/dist
 
 # MacOS

@@ -26,7 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @RequiredArgsConstructor
 @Slf4j
-public class NettySSContext<SUBSCRIPTION, DATA> implements SSContext<SUBSCRIPTION, DATA> {
+public class NettySSContext<SUBSCRIPTION, INITIAL_DATA, DATA> implements SSContext<SUBSCRIPTION, INITIAL_DATA, DATA> {
 
     private static final NettyJsonCodec NETTY_JSON_CODEC = NettyJsonCodec.instance();
 
@@ -39,6 +39,7 @@ public class NettySSContext<SUBSCRIPTION, DATA> implements SSContext<SUBSCRIPTIO
     private final Dispatcher dispatcher;
 
     private BayLeafCodec.Serializer serializer;
+    private Class<INITIAL_DATA> initialDataType;
     private Class<DATA> dataType;
     private BayLeafCodec.Deserializer deserializer;
     private Class<SUBSCRIPTION> subscriptionType;
@@ -112,9 +113,9 @@ public class NettySSContext<SUBSCRIPTION, DATA> implements SSContext<SUBSCRIPTIO
     }
 
     @Override
-    public void snapshot(final SharedSubscriptionData<SUBSCRIPTION, DATA> snapshot) {
+    public void snapshot(final SharedSubscriptionData<SUBSCRIPTION, INITIAL_DATA> snapshot) {
         final String correlationId = this.subscriptionHashes.get(snapshot.getSubscription().getSubscriptionId());
-        final byte[] serialized = this.serializer.serialize(snapshot.getData(), this.dataType);
+        final byte[] serialized = this.serializer.serialize(snapshot.getData(), this.initialDataType);
         final ApplicationMessage appMsg = new ApplicationMessage(correlationId, MessageType.INITIAL_DATA, this.serviceName, this.route, MessagingPattern.SS, serialized);
         this.channelCtx.writeAndFlush(new TextWebSocketFrame(NETTY_JSON_CODEC.serializeToString(appMsg)));
     }
@@ -125,14 +126,15 @@ public class NettySSContext<SUBSCRIPTION, DATA> implements SSContext<SUBSCRIPTIO
         return sharedStreamContext;
     }
 
-    public void setSerializer(final BayLeafCodec.Serializer serializer, final Class<SUBSCRIPTION> inType) {
+    public void setSerializer(final BayLeafCodec.Serializer serializer, final Class<INITIAL_DATA> snapshotType, final Class<DATA> inType) {
         this.serializer = serializer;
-        this.subscriptionType = inType;
+        this.initialDataType = snapshotType;
+        this.dataType = inType;
     }
 
-    public void setDeserializer(final BayLeafCodec.Deserializer deserializer, final Class<DATA> outType) {
+    public void setDeserializer(final BayLeafCodec.Deserializer deserializer, final Class<SUBSCRIPTION> inType) {
         this.deserializer = deserializer;
-        this.dataType = outType;
+        this.subscriptionType = inType;
     }
 
     @RequiredArgsConstructor

@@ -169,7 +169,7 @@ public class BayLeafServerServiceMessageHandler extends SimpleChannelInboundHand
         public PSContext createPS(final String psEndpointName) {
             final NettyPSContext psContext = new NettyPSContext<>(this.session, this.serviceName, psEndpointName, this.channelHandlerContext, dispatchingStrategy.dispatcher(this.session));
             final CodecDetails codecDetails = this.serviceConnector.getCodecDetails(psEndpointName);
-            psContext.setSerializer(codecDetails.getSerializer(), codecDetails.getOutType());
+            psContext.setSerializer(codecDetails.getSerializer(), codecDetails.getSnapshotType(), codecDetails.getOutType());
             psContext.setDeserializer(codecDetails.getDeserializer(), codecDetails.getInType());
             BayLeafServerServiceMessageHandler.this.sessionContexts.get(this.session.getSessionId()).psContextByName.put(psEndpointName, psContext);
             return psContext;
@@ -179,8 +179,8 @@ public class BayLeafServerServiceMessageHandler extends SimpleChannelInboundHand
         public SSContext createSS(final String ssEndpointName) {
             final NettySSContext ssContext = new NettySSContext<>(this.session, this.serviceName, ssEndpointName, this.channelHandlerContext, dispatchingStrategy.dispatcher(this.session));
             final CodecDetails codecDetails = this.serviceConnector.getCodecDetails(ssEndpointName);
-            ssContext.setSerializer(codecDetails.getSerializer(), codecDetails.getInType());
-            ssContext.setDeserializer(codecDetails.getDeserializer(), codecDetails.getOutType());
+            ssContext.setSerializer(codecDetails.getSerializer(), codecDetails.getSnapshotType(), codecDetails.getOutType());
+            ssContext.setDeserializer(codecDetails.getDeserializer(), codecDetails.getInType());
             BayLeafServerServiceMessageHandler.this.sessionContexts.get(this.session.getSessionId()).ssContextByName.put(ssEndpointName, ssContext);
             return ssContext;
         }

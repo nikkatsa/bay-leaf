@@ -203,6 +203,7 @@ public abstract class Connector {
                 final String name = psAnnotation.name();
                 final Class<?> inType = psAnnotation.subscriptionType();
                 final Class<?> outType = psAnnotation.dataType();
+                final Class<?> snapshotType = psAnnotation.initialDataType();
                 final Parameter[] parameters = method.getParameters();
                 if (parameters.length != 1 || !PSContext.class.equals(parameters[0].getType())) {
                     final String errorMsg = String.format("%s annotated method must have one parameter of type %s. Method=%s with %s#name=%s has Parametrs=[%s]",
@@ -211,11 +212,12 @@ public abstract class Connector {
                     throw new IllegalArgumentException(errorMsg);
                 }
 
-                this.psMessagingPatterns.put(name, new MessagingPatternDetails(name, method, inType, outType));
+                this.psMessagingPatterns.put(name, new MessagingPatternDetails(name, method, inType, outType, snapshotType));
             } else if (method.isAnnotationPresent(SS.class)) {
                 final SS ssAnnotation = method.getAnnotation(SS.class);
                 final String name = ssAnnotation.name();
                 final Class<?> inType = ssAnnotation.subscriptionType();
+                final Class<?> snapshotType = ssAnnotation.initialDataType();
                 final Class<?> outType = ssAnnotation.dataType();
                 final Parameter[] parameters = method.getParameters();
                 if (parameters.length != 1 || !SSContext.class.equals(parameters[0].getType())) {
@@ -225,7 +227,7 @@ public abstract class Connector {
                     throw new IllegalArgumentException(errorMsg);
                 }
 
-                this.ssMessagingPatterns.put(name, new MessagingPatternDetails(name, method, inType, outType));
+                this.ssMessagingPatterns.put(name, new MessagingPatternDetails(name, method, inType, outType, snapshotType));
             }
         }
     }
@@ -241,11 +243,11 @@ public abstract class Connector {
         }
         messagingPatternDetails = this.psMessagingPatterns.get(endpointName);
         if(Objects.nonNull(messagingPatternDetails)) {
-            return new CodecDetails(this.serializer, this.deserializer, messagingPatternDetails.getInType(), messagingPatternDetails.getOutType());
+            return new CodecDetails(this.serializer, this.deserializer, messagingPatternDetails.getInType(), messagingPatternDetails.getOutType(), messagingPatternDetails.getSnapshotType());
         }
         messagingPatternDetails = this.ssMessagingPatterns.get(endpointName);
         if (Objects.nonNull(messagingPatternDetails)) {
-        return new CodecDetails(this.serializer, this.deserializer, messagingPatternDetails.getInType(), messagingPatternDetails.getOutType());
+            return new CodecDetails(this.serializer, this.deserializer, messagingPatternDetails.getInType(), messagingPatternDetails.getOutType(), messagingPatternDetails.getSnapshotType());
         }
         messagingPatternDetails = this.bcMessagingPatterns.get(endpointName);
         if (Objects.nonNull(messagingPatternDetails)) {

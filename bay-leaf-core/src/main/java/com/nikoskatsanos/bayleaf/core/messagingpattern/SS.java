@@ -23,6 +23,11 @@ public @interface SS {
     Class<?> subscriptionType();
 
     /**
+     * @return type of initial(snapshot) streamed data
+     */
+    Class<?> initialDataType();
+
+    /**
      * @return type of streamed data
      */
     Class<?> dataType();

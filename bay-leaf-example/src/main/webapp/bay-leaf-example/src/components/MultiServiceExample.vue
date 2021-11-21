@@ -261,11 +261,12 @@ export default {
     },
     onTradeBlotterInitialData(tradeBlotterResponse) {
       console.log(tradeBlotterResponse);
-      this.blotterData = [].concat( tradeBlotterResponse.trades.map(t => {  return {timestamp: t.timestamp, id: t.id, symbol: t.symbol, quantity: t.quantity, price: t.price, side: this.translateSide(t.side)}; }));
+      this.blotterData = [].concat( tradeBlotterResponse.map(t => {  return {timestamp: t.timestamp, id: t.id, symbol: t.symbol, quantity: t.quantity, price: t.price, side: this.translateSide(t.side)}; }));
     },
     onTradeBlotterData(tradeBlotterResponse) {
       console.log(tradeBlotterResponse);
-      this.blotterData.push(...tradeBlotterResponse.trades.map(t => {  return {timestamp: t.timestamp, id: t.id, symbol: t.symbol, quantity: t.quantity, price: t.price, side: this.translateSide(t.side)}; }))
+      const trade = {timestamp: tradeBlotterResponse.timestamp, id: tradeBlotterResponse.id, symbol: tradeBlotterResponse.symbol, quantity: tradeBlotterResponse.quantity, price: tradeBlotterResponse.price, side: this.translateSide(tradeBlotterResponse.side)};
+      this.blotterData.push(trade);
     },
     translateSide(side) {
       return side === 'BID' ? 'SELL' : 'BUY';

@@ -7,9 +7,10 @@ import java.util.function.Consumer;
  * Represents a private stream context, for a particular {@link Session} on a particular endpoint
  *
  * @param <SUBSCRIPTION> subscription type
+ * @param <INITIAL_DATA> Published initial(snapshot) data type
  * @param <DATA> Published data type
  */
-public interface PSContext<SUBSCRIPTION, DATA> {
+public interface PSContext<SUBSCRIPTION, INITIAL_DATA, DATA> {
 
     /**
      * @return The session the context refers to
@@ -29,7 +30,7 @@ public interface PSContext<SUBSCRIPTION, DATA> {
     /**
      * @param snapshot of data to be send to the remote end
      */
-    void initialData(final SubscriptionData<SUBSCRIPTION, DATA> snapshot);
+    void initialData(final SubscriptionData<SUBSCRIPTION, INITIAL_DATA> snapshot);
 
     /**
      * @param subscriptionData to be send to the remote end

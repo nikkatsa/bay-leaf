@@ -101,8 +101,8 @@ public class EchoConnector extends Connector {
         }
     }
 
-    @PS(name = "echoStream", subscriptionType = String.class, dataType = String.class)
-    public void privateStream(final PSContext<String, String> psContext) {
+    @PS(name = "echoStream", subscriptionType = String.class, initialDataType = String.class, dataType = String.class)
+    public void privateStream(final PSContext<String, String, String> psContext) {
         psContext.onSubscription(sub -> {
             logger.info("Subscription Request={}, Session={}", sub, psContext.session());
             final EchoStreamer echoStreamer = new EchoStreamer(sub, psContext);
@@ -119,8 +119,8 @@ public class EchoConnector extends Connector {
         });
     }
 
-    @SS(name = "echoShared", subscriptionType = String.class, dataType = String.class)
-    public void sharedStream(final SSContext<String, String> ssContext) {
+    @SS(name = "echoShared", subscriptionType = String.class, initialDataType = String.class, dataType = String.class)
+    public void sharedStream(final SSContext<String, String, String> ssContext) {
         ssContext.onSubscription(ssSub -> {
             final EchoSharedStreamer echoSharedStreamer = this.sharedStreamers
                 .computeIfAbsent(ssSub.getSubscription(), k -> new EchoSharedStreamer(ssSub, ssContext.streamContext(ssSub.getSubscription())));
@@ -178,11 +178,11 @@ public class EchoConnector extends Connector {
 
         @Setter
         private Subscription<String> subscription;
-        private final PSContext<String, String> context;
+        private final PSContext<String, String, String> context;
         private long counter = 0;
         private ScheduledFuture<?> streamingTask;
 
-        public EchoStreamer(Subscription<String> subscription, PSContext<String, String> context) {
+        public EchoStreamer(Subscription<String> subscription, PSContext<String, String, String> context) {
             this.subscription = subscription;
             this.context = context;
         }
