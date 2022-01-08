@@ -10,7 +10,8 @@ public class JsonCodec implements BayLeafCodec {
 
     private static final ObjectMapper JSON_MAPPER = new ObjectMapper()
         .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-        .configure(SerializationFeature.INDENT_OUTPUT, false);
+        .configure(SerializationFeature.INDENT_OUTPUT, false)
+        .configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
 
     private static final Serializer SERIALIZER = new Serializer();
     private static final Deserializer DESERIALIZER = new Deserializer();
