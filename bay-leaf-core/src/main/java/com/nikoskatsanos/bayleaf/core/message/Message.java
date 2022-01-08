@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = As.EXISTING_PROPERTY, property = "messageType", visible = true)
 @JsonSubTypes({
     @JsonSubTypes.Type(value = SessionMessage.class, names = "SESSION_INITIALIZING"),
-    @JsonSubTypes.Type(value = SessionMessage.class, names = "SESSION_INITIALIZE"),
+    @JsonSubTypes.Type(value = SessionMessage.class, names = "SESSION_INITIALIZED"),
     @JsonSubTypes.Type(value = SessionMessage.class, names = "AUTH"),
     @JsonSubTypes.Type(value = SessionMessage.class, names = "SERVICE_CREATE"),
     @JsonSubTypes.Type(value = SessionMessage.class, names = "HEARTBEAT"),

@@ -27,6 +27,12 @@
             <artifactId>bay-leaf-netty</artifactId>
             <version>${project.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.nikoskatsanos</groupId>
+            <artifactId>bay-leaf-client</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 
     <profiles>

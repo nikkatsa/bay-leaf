@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration name="BasicConfiguration" status="info" monitorInterval="60">
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout header="**** Log4j2 File initialized ${date:dd-MM-YYYY:HH:mm:ss.SSS} ****%n%n"
+                pattern="%highlight{%d{ISO8601} %-5level %-80.80logger{36} [%-10t] - %msg%n}">
+            </PatternLayout>
+        </Console>
+    </Appenders>
+
+    <Loggers>
+
+        <Root level="info">
+            <AppenderRef ref="Console"/>
+        </Root>
+    </Loggers>
+</Configuration>

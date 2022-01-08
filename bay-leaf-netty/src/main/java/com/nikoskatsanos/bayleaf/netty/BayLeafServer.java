@@ -15,7 +15,15 @@ import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.security.Key;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Objects;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -101,6 +109,29 @@ public class BayLeafServer implements AutoCloseable {
             } catch (final SSLException e) {
                 throw new RuntimeException(String.format("Failed to create SSL context for Cert=%s, Private=%s", cert.getAbsolutePath(), privateKey.getAbsolutePath()));
             }
+        }
+
+        /**
+         * Create an SSL context from a JKS keystore containing a key pair
+         * @param keystoreFile jks keystore
+         * @param keystorePass jks keystore password
+         * @return the builder instance
+         */
+        public Builder withSSLContext(final File keystoreFile, final char[] keystorePass) {
+            try {
+                final KeyStore keystore = KeyStore.getInstance("JKS");
+                keystore.load(new FileInputStream(keystoreFile), keystorePass);
+
+                final KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+                keyManagerFactory.init(keystore, keystorePass);
+
+                final SSLContext sslContext = SSLContext.getInstance("TLS");
+                sslContext.init(keyManagerFactory.getKeyManagers(), null, null);// No trustStore use the JRE cacerts
+                this.sslContext = SslContextBuilder.forServer(keyManagerFactory).build();
+            } catch (final Exception e) {
+                throw new RuntimeException(String.format("Could not create SSL context for KeystoreFile=%s", keystoreFile), e);
+            }
+            return this;
         }
 
         public Builder withDispatchingStrategy(final DispatchingStrategy dispatchingStrategy) {

@@ -21,10 +21,10 @@ public class NettyEchoServer {
         BayLeafStaticContentServer staticContentServer = BayLeafStaticContentServer
             .newBuilder()
             .withPort(9997)
-            .withContext("foo")
+            .withContext("")
             .withResourcePath("./bay-leaf-example/src/main/resources/public")
             .withSecurePort(9998)
-            .withKeystore("./bay-leaf-example/src/main/resources/keystore", "changeit")
+            .withKeystore("./bay-leaf-example/src/main/resources/BayLeafTestKeyPair", "changeit")
             .build();
         staticContentServer.start();
 
@@ -35,13 +35,15 @@ public class NettyEchoServer {
 
         final File cert = new File("bay-leaf-example/src/main/resources/test.cer");
         final File keystore = new File("bay-leaf-example/src/main/resources/test_key.pem");
+        final File jksKeystore = new File("bay-leaf-example/src/main/resources/BayLeafTestKeyPair.jks");
 
         final BayLeafServer server = new Builder()
             .withPort(9999)
             .withAuthenticator(new NullAuthenticator())
             .withAuthorizer(new NullAuthorizer())
             .withConnectorRegistry(connectorRegistry)
-            .withSSLContext(cert, keystore, null)
+//            .withSSLContext(cert, keystore, null)
+            .withSSLContext(jksKeystore, "changeit".toCharArray())
             .withDispatchingStrategy(new OrderedDispatcher(Executors.newFixedThreadPool(8, new BayLeafThreadFactory("EchoServiceDispatcher"))))
             .build();
         server.start();

@@ -27,7 +27,7 @@
 
         <netty.version>4.1.66.Final</netty.version>
         <jetty.version>9.4.44.v20210927</jetty.version>
-        <log4j2.version>2.14.1</log4j2.version>
+        <log4j2.version>2.16.0</log4j2.version>
         <lombok.version>1.18.20</lombok.version>
         <jackson.version>2.12.4</jackson.version>
 

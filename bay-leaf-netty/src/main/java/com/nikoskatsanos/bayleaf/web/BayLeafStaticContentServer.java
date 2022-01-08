@@ -19,7 +19,6 @@ import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.SslConnectionFactory;
 import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.HandlerCollection;
-import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.util.resource.PathResource;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
@@ -133,10 +132,10 @@ public class BayLeafStaticContentServer {
             resourceHandler.setBaseResource(new PathResource(this.resourcePath.toFile()));
 
             final HandlerCollection handlerCollection = new HandlerCollection();
-            final Handler contextHandler = new ContextHandler(this.context);
+            final ContextHandler contextHandler = new ContextHandler("/" + this.context);
+            contextHandler.setHandler(resourceHandler);
 
             handlerCollection.addHandler(contextHandler);
-            handlerCollection.addHandler(resourceHandler);
 
             server.setHandler(handlerCollection);
 
