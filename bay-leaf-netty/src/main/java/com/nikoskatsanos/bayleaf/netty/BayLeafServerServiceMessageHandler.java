@@ -1,7 +1,5 @@
 package com.nikoskatsanos.bayleaf.netty;
 
-import com.nikoskatsanos.bayleaf.core.Connector;
-import com.nikoskatsanos.bayleaf.core.ConnectorRegistry;
 import com.nikoskatsanos.bayleaf.core.Heartbeat;
 import com.nikoskatsanos.bayleaf.core.codec.CodecDetails;
 import com.nikoskatsanos.bayleaf.core.message.ServiceMessage;
@@ -9,12 +7,14 @@ import com.nikoskatsanos.bayleaf.core.Session;
 import com.nikoskatsanos.bayleaf.core.message.ApplicationMessage;
 import com.nikoskatsanos.bayleaf.core.message.Message;
 import com.nikoskatsanos.bayleaf.core.messagingpattern.MessagingPattern;
-import com.nikoskatsanos.bayleaf.core.messagingpattern.BCContext;
-import com.nikoskatsanos.bayleaf.core.messagingpattern.MessagingPatternContextFactory;
-import com.nikoskatsanos.bayleaf.core.messagingpattern.PSContext;
-import com.nikoskatsanos.bayleaf.core.messagingpattern.RRAContext;
-import com.nikoskatsanos.bayleaf.core.messagingpattern.RRContext;
-import com.nikoskatsanos.bayleaf.core.messagingpattern.SSContext;
+import com.nikoskatsanos.bayleaf.server.Connector;
+import com.nikoskatsanos.bayleaf.server.ConnectorRegistry;
+import com.nikoskatsanos.bayleaf.server.messagingpattern.BCContext;
+import com.nikoskatsanos.bayleaf.server.messagingpattern.MessagingPatternContextFactory;
+import com.nikoskatsanos.bayleaf.server.messagingpattern.PSContext;
+import com.nikoskatsanos.bayleaf.server.messagingpattern.RRAContext;
+import com.nikoskatsanos.bayleaf.server.messagingpattern.RRContext;
+import com.nikoskatsanos.bayleaf.server.messagingpattern.SSContext;
 import com.nikoskatsanos.bayleaf.netty.dispatch.DispatchingStrategy;
 import com.nikoskatsanos.bayleaf.netty.messagingpattern.NettyBCContext;
 import com.nikoskatsanos.bayleaf.netty.codec.NettyJsonCodec;

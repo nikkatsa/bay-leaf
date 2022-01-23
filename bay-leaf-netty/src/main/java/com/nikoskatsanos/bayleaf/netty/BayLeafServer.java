@@ -1,26 +1,21 @@
 package com.nikoskatsanos.bayleaf.netty;
 
-import com.nikoskatsanos.bayleaf.core.ConnectorRegistry;
 import com.nikoskatsanos.bayleaf.core.auth.Authenticator;
 import com.nikoskatsanos.bayleaf.core.auth.Authorizer;
 import com.nikoskatsanos.bayleaf.netty.dispatch.DispatchingStrategy;
+import com.nikoskatsanos.bayleaf.server.ConnectorRegistry;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.security.Key;
 import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
 import java.util.Objects;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;

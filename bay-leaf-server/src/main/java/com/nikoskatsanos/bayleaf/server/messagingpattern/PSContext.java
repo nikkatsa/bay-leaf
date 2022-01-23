@@ -1,4 +1,4 @@
-package com.nikoskatsanos.bayleaf.core.messagingpattern;
+package com.nikoskatsanos.bayleaf.server.messagingpattern;
 
 import com.nikoskatsanos.bayleaf.core.Session;
 import java.util.function.Consumer;

@@ -10,7 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>bay-leaf-core</artifactId>
-    <description>core library</description>
+    <description>Core library. Shareable domain objects</description>
     <packaging>jar</packaging>
 
     <properties>

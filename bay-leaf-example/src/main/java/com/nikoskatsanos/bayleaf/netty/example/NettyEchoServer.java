@@ -1,6 +1,5 @@
 package com.nikoskatsanos.bayleaf.netty.example;
 
-import com.nikoskatsanos.bayleaf.core.ConnectorRegistry;
 import com.nikoskatsanos.bayleaf.core.util.BayLeafThreadFactory;
 import com.nikoskatsanos.bayleaf.netty.BayLeafServer;
 import com.nikoskatsanos.bayleaf.netty.BayLeafServer.Builder;
@@ -8,6 +7,7 @@ import com.nikoskatsanos.bayleaf.core.auth.NullAuthenticator;
 import com.nikoskatsanos.bayleaf.core.auth.NullAuthorizer;
 import com.nikoskatsanos.bayleaf.netty.dispatch.DispatchingStrategy.OrderedDispatcher;
 import com.nikoskatsanos.bayleaf.netty.example.connector.TradeConnector;
+import com.nikoskatsanos.bayleaf.server.ConnectorRegistry;
 import com.nikoskatsanos.bayleaf.web.BayLeafStaticContentServer;
 import java.io.File;
 import java.util.concurrent.Executors;

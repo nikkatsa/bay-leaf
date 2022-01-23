@@ -1,4 +1,4 @@
-package com.nikoskatsanos.bayleaf.core.messagingpattern;
+package com.nikoskatsanos.bayleaf.server.messagingpattern;
 
 public interface BCContext<BROADCAST> {
 

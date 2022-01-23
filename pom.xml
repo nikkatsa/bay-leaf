@@ -11,9 +11,10 @@
 
     <modules>
         <module>bay-leaf-core</module>
+        <module>bay-leaf-server</module>
+        <module>bay-leaf-client</module>
         <module>bay-leaf-netty</module>
         <module>bay-leaf-example</module>
-        <module>bay-leaf-client</module>
     </modules>
 
     <name>bay-leaf</name>
@@ -22,8 +23,8 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>16</maven.compiler.source>
-        <maven.compiler.target>16</maven.compiler.target>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
 
         <netty.version>4.1.66.Final</netty.version>
         <jetty.version>9.4.44.v20210927</jetty.version>

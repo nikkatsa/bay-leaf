@@ -1,17 +1,13 @@
-package com.nikoskatsanos.bayleaf.core.messagingpattern;
+package com.nikoskatsanos.bayleaf.server.messagingpattern;
 
 import com.nikoskatsanos.bayleaf.core.Session;
 import java.util.function.Consumer;
 
-public interface RRAContext<REQUEST, RESPONSE> {
+public interface RRContext<REQUEST, RESPONSE> {
 
     Session session();
 
     void onRequest(final Consumer<Request<REQUEST>> requestConsumer);
-
-    void onAck(final Consumer<Request<REQUEST>> ackConsumer);
-
-    void onAckTimeout(final Consumer<Request<REQUEST>> ackTimeoutConsumer);
 
     void response(final Response<REQUEST, RESPONSE> response);
 

@@ -1,15 +1,15 @@
 package com.nikoskatsanos.bayleaf.netty.example.connector;
 
-import com.nikoskatsanos.bayleaf.core.Connector;
 import com.nikoskatsanos.bayleaf.core.codec.JsonCodec;
-import com.nikoskatsanos.bayleaf.core.messagingpattern.PS;
-import com.nikoskatsanos.bayleaf.core.messagingpattern.PSContext;
-import com.nikoskatsanos.bayleaf.core.messagingpattern.RRA;
-import com.nikoskatsanos.bayleaf.core.messagingpattern.RRAContext;
-import com.nikoskatsanos.bayleaf.core.messagingpattern.Request;
-import com.nikoskatsanos.bayleaf.core.messagingpattern.Response;
-import com.nikoskatsanos.bayleaf.core.messagingpattern.Subscription;
-import com.nikoskatsanos.bayleaf.core.messagingpattern.SubscriptionData;
+import com.nikoskatsanos.bayleaf.server.Connector;
+import com.nikoskatsanos.bayleaf.server.messagingpattern.PS;
+import com.nikoskatsanos.bayleaf.server.messagingpattern.PSContext;
+import com.nikoskatsanos.bayleaf.server.messagingpattern.RRA;
+import com.nikoskatsanos.bayleaf.server.messagingpattern.RRAContext;
+import com.nikoskatsanos.bayleaf.server.messagingpattern.Request;
+import com.nikoskatsanos.bayleaf.server.messagingpattern.Response;
+import com.nikoskatsanos.bayleaf.server.messagingpattern.Subscription;
+import com.nikoskatsanos.bayleaf.server.messagingpattern.SubscriptionData;
 import com.nikoskatsanos.bayleaf.netty.example.model.Trade;
 import com.nikoskatsanos.bayleaf.netty.example.model.TradeBlotterRequest;
 import com.nikoskatsanos.bayleaf.netty.example.model.TradeRequest;

@@ -4,7 +4,7 @@ import com.nikoskatsanos.bayleaf.core.Heartbeat;
 import com.nikoskatsanos.bayleaf.core.message.Message;
 import com.nikoskatsanos.bayleaf.core.message.MessageType;
 import com.nikoskatsanos.bayleaf.core.Session;
-import com.nikoskatsanos.bayleaf.core.SessionContext;
+import com.nikoskatsanos.bayleaf.server.SessionContext;
 import com.nikoskatsanos.bayleaf.core.message.SessionMessage;
 import com.nikoskatsanos.bayleaf.netty.codec.NettyJsonCodec;
 import io.netty.channel.ChannelHandlerContext;

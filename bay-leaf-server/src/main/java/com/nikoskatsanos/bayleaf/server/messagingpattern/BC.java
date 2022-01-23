@@ -1,4 +1,4 @@
-package com.nikoskatsanos.bayleaf.core.messagingpattern;
+package com.nikoskatsanos.bayleaf.server.messagingpattern;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

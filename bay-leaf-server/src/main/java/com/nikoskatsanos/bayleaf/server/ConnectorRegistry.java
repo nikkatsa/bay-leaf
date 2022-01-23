@@ -1,4 +1,4 @@
-package com.nikoskatsanos.bayleaf.core;
+package com.nikoskatsanos.bayleaf.server;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -20,7 +20,7 @@
     <dependencies>
         <dependency>
             <groupId>com.nikoskatsanos</groupId>
-            <artifactId>bay-leaf-core</artifactId>
+            <artifactId>bay-leaf-server</artifactId>
             <version>${project.version}</version>
         </dependency>
 

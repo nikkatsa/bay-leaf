@@ -1,4 +1,4 @@
-package com.nikoskatsanos.bayleaf.core.messagingpattern;
+package com.nikoskatsanos.bayleaf.server.messagingpattern;
 
 import java.lang.reflect.Method;
 import lombok.Data;

@@ -1,15 +1,15 @@
 package com.nikoskatsanos.bayleaf.netty.example;
 
-import com.nikoskatsanos.bayleaf.core.Connector;
 import com.nikoskatsanos.bayleaf.core.codec.JsonCodec;
-import com.nikoskatsanos.bayleaf.core.messagingpattern.RR;
-import com.nikoskatsanos.bayleaf.core.messagingpattern.RRContext;
-import com.nikoskatsanos.bayleaf.core.messagingpattern.Response;
-import com.nikoskatsanos.bayleaf.core.messagingpattern.SS;
-import com.nikoskatsanos.bayleaf.core.messagingpattern.SSContext;
-import com.nikoskatsanos.bayleaf.core.messagingpattern.SSContext.StreamContext;
-import com.nikoskatsanos.bayleaf.core.messagingpattern.SharedSubscription;
-import com.nikoskatsanos.bayleaf.core.messagingpattern.SharedSubscriptionData;
+import com.nikoskatsanos.bayleaf.server.Connector;
+import com.nikoskatsanos.bayleaf.server.messagingpattern.RR;
+import com.nikoskatsanos.bayleaf.server.messagingpattern.RRContext;
+import com.nikoskatsanos.bayleaf.server.messagingpattern.Response;
+import com.nikoskatsanos.bayleaf.server.messagingpattern.SS;
+import com.nikoskatsanos.bayleaf.server.messagingpattern.SSContext;
+import com.nikoskatsanos.bayleaf.server.messagingpattern.SSContext.StreamContext;
+import com.nikoskatsanos.bayleaf.server.messagingpattern.SharedSubscription;
+import com.nikoskatsanos.bayleaf.server.messagingpattern.SharedSubscriptionData;
 import com.nikoskatsanos.bayleaf.core.util.BayLeafThreadFactory;
 import com.nikoskatsanos.bayleaf.netty.example.model.MarketDataRequest;
 import com.nikoskatsanos.bayleaf.netty.example.model.MarketDataResponse;
