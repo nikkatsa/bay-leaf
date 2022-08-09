@@ -1,4 +1,4 @@
-package com.nikoskatsanos.bayleaf.core.message;
+package com.nikoskatsanos.bayleaf.domain.message;
 
 public enum MessageType {
     // Session level

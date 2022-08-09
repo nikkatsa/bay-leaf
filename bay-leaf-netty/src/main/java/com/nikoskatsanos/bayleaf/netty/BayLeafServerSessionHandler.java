@@ -1,14 +1,14 @@
 package com.nikoskatsanos.bayleaf.netty;
 
-import com.nikoskatsanos.bayleaf.core.Session;
-import com.nikoskatsanos.bayleaf.core.User;
+import com.nikoskatsanos.bayleaf.domain.Session;
+import com.nikoskatsanos.bayleaf.domain.User;
 import com.nikoskatsanos.bayleaf.core.auth.Authenticator;
 import com.nikoskatsanos.bayleaf.core.auth.Authenticator.Token;
 import com.nikoskatsanos.bayleaf.core.auth.Authorizer;
 import com.nikoskatsanos.bayleaf.core.auth.Tokens;
-import com.nikoskatsanos.bayleaf.core.message.Message;
-import com.nikoskatsanos.bayleaf.core.message.MessageType;
-import com.nikoskatsanos.bayleaf.core.message.SessionMessage;
+import com.nikoskatsanos.bayleaf.domain.message.Message;
+import com.nikoskatsanos.bayleaf.domain.message.MessageType;
+import com.nikoskatsanos.bayleaf.domain.message.SessionMessage;
 import com.nikoskatsanos.bayleaf.netty.codec.NettyJsonCodec;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler.Sharable;

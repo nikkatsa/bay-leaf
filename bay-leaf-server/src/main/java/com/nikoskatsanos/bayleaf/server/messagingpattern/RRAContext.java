@@ -1,6 +1,6 @@
 package com.nikoskatsanos.bayleaf.server.messagingpattern;
 
-import com.nikoskatsanos.bayleaf.core.Session;
+import com.nikoskatsanos.bayleaf.domain.Session;
 import java.util.function.Consumer;
 
 public interface RRAContext<REQUEST, RESPONSE> {

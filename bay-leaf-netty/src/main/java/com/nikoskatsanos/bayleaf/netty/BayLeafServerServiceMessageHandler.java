@@ -1,12 +1,12 @@
 package com.nikoskatsanos.bayleaf.netty;
 
-import com.nikoskatsanos.bayleaf.core.Heartbeat;
+import com.nikoskatsanos.bayleaf.domain.message.Heartbeat;
 import com.nikoskatsanos.bayleaf.core.codec.CodecDetails;
-import com.nikoskatsanos.bayleaf.core.message.ServiceMessage;
-import com.nikoskatsanos.bayleaf.core.Session;
-import com.nikoskatsanos.bayleaf.core.message.ApplicationMessage;
-import com.nikoskatsanos.bayleaf.core.message.Message;
-import com.nikoskatsanos.bayleaf.core.messagingpattern.MessagingPattern;
+import com.nikoskatsanos.bayleaf.domain.message.ServiceMessage;
+import com.nikoskatsanos.bayleaf.domain.Session;
+import com.nikoskatsanos.bayleaf.domain.message.ApplicationMessage;
+import com.nikoskatsanos.bayleaf.domain.message.Message;
+import com.nikoskatsanos.bayleaf.domain.message.MessagingPattern;
 import com.nikoskatsanos.bayleaf.server.Connector;
 import com.nikoskatsanos.bayleaf.server.ConnectorRegistry;
 import com.nikoskatsanos.bayleaf.server.messagingpattern.BCContext;

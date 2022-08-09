@@ -1,11 +1,11 @@
 package com.nikoskatsanos.bayleaf.netty;
 
-import com.nikoskatsanos.bayleaf.core.Heartbeat;
-import com.nikoskatsanos.bayleaf.core.message.Message;
-import com.nikoskatsanos.bayleaf.core.message.MessageType;
-import com.nikoskatsanos.bayleaf.core.Session;
+import com.nikoskatsanos.bayleaf.domain.message.Heartbeat;
+import com.nikoskatsanos.bayleaf.domain.message.Message;
+import com.nikoskatsanos.bayleaf.domain.message.MessageType;
+import com.nikoskatsanos.bayleaf.domain.Session;
 import com.nikoskatsanos.bayleaf.server.SessionContext;
-import com.nikoskatsanos.bayleaf.core.message.SessionMessage;
+import com.nikoskatsanos.bayleaf.domain.message.SessionMessage;
 import com.nikoskatsanos.bayleaf.netty.codec.NettyJsonCodec;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;

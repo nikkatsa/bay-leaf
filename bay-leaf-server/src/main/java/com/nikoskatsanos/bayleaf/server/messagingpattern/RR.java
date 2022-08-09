@@ -6,7 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * An annotation to be used for {@link com.nikoskatsanos.bayleaf.core.Connector} endpoints that are request-response
+ * An annotation to be used for {@link com.nikoskatsanos.bayleaf.server.Connector} endpoints that are request-response
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD})

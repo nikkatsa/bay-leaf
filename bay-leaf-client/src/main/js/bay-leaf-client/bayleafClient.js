@@ -24,6 +24,7 @@ class BayLeafClient {
 
   isUserInitiatedClose = false;
   isReconnecting = null;
+  isSessionInitialized = false;
 
   services = new Map();
 
@@ -42,6 +43,7 @@ class BayLeafClient {
 
   onClose = (event) => {
       console.info(`Connection and session closed to URL=${this.url}, SessionId=${this.sessionId}, IsUserInitiatedClose=${this.isUserInitiatedClose}`);
+      this.isSessionInitialized = false;
       for(let sessionCallbackListener of this.sessionCallbackListeners) {
           const onReconnectLoop = !this.isUserInitiatedClose;
           sessionCallbackListener.onSessionDestroyed(onReconnectLoop);
@@ -64,6 +66,9 @@ class BayLeafClient {
       if(sessionCallbackListener) {
         this.sessionCallbackListeners.push(sessionCallbackListener);
       }
+      if(this.isSessionInitialized) {
+        setTimeout(() => sessionCallbackListener.onSessionInitialized())
+      }
   }
 
   onMessage = (event) => {
@@ -78,6 +83,7 @@ class BayLeafClient {
               break;
           case MessageType.SESSION_INITIALIZED:
               console.info(`OnSessionInitialized SessionId=${this.sessionId}`);
+              this.isSessionInitialized = true;
               for(let sessionCallbackListener of this.sessionCallbackListeners) {
                   sessionCallbackListener.onSessionInitialized();
               }

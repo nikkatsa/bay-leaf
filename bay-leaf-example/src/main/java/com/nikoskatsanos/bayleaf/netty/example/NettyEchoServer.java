@@ -24,7 +24,7 @@ public class NettyEchoServer {
             .withContext("")
             .withResourcePath("./bay-leaf-example/src/main/resources/public")
             .withSecurePort(9998)
-            .withKeystore("./bay-leaf-example/src/main/resources/BayLeafTestKeyPair", "changeit")
+            .withKeystore("./bay-leaf-example/src/main/resources/BayLeafTestKeyPair.jks", "changeit")
             .build();
         staticContentServer.start();
 

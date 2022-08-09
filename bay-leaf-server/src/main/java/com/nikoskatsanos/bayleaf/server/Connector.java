@@ -1,6 +1,6 @@
 package com.nikoskatsanos.bayleaf.server;
 
-import com.nikoskatsanos.bayleaf.core.Heartbeat;
+import com.nikoskatsanos.bayleaf.domain.message.Heartbeat;
 import com.nikoskatsanos.bayleaf.core.codec.BayLeafCodec;
 import com.nikoskatsanos.bayleaf.core.codec.BayLeafCodec.Deserializer;
 import com.nikoskatsanos.bayleaf.core.codec.BayLeafCodec.Serializer;

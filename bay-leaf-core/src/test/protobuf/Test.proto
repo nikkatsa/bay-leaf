@@ -1,0 +1,8 @@
+syntax = "proto3";
+
+package com.nikoskatsanos.bayleaf.core.test;
+
+message TestMsg {
+  string txt = 1;
+  int32 id = 2;
+}

@@ -1,6 +1,6 @@
 package com.nikoskatsanos.bayleaf.core.auth;
 
-import com.nikoskatsanos.bayleaf.core.User;
+import com.nikoskatsanos.bayleaf.domain.User;
 
 public class NullAuthorizer implements Authorizer{
 

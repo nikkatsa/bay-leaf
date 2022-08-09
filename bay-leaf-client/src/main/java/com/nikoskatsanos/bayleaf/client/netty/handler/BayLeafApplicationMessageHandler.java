@@ -1,9 +1,10 @@
 package com.nikoskatsanos.bayleaf.client.netty.handler;
 
 import com.nikoskatsanos.bayleaf.client.netty.BayLeafServiceNettyImpl;
-import com.nikoskatsanos.bayleaf.core.message.ApplicationMessage;
-import com.nikoskatsanos.bayleaf.core.message.ErrorMessage;
+import com.nikoskatsanos.bayleaf.domain.message.ApplicationMessage;
+import com.nikoskatsanos.bayleaf.domain.message.ErrorMessage;
 import com.nikoskatsanos.bayleaf.netty.codec.NettyJsonCodec;
+import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import java.util.Map;
@@ -12,6 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@Sharable
 public class BayLeafApplicationMessageHandler extends SimpleChannelInboundHandler<ApplicationMessage> {
 
     private static final NettyJsonCodec NETTY_JSON_CODEC = NettyJsonCodec.instance();

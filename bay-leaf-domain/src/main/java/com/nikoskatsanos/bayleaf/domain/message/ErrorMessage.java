@@ -1,8 +1,10 @@
-package com.nikoskatsanos.bayleaf.core.message;
+package com.nikoskatsanos.bayleaf.domain.message;
 
-import com.nikoskatsanos.bayleaf.core.messagingpattern.MessagingPattern;
 import lombok.Data;
 
+/**
+ * A special {@link ApplicationMessage} to denote an error, with an error code and a reason.
+ */
 @Data
 public class ErrorMessage extends ApplicationMessage{
 

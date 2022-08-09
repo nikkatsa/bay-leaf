@@ -14,7 +14,7 @@ import com.nikoskatsanos.bayleaf.client.netty.messagingpatterns.StreamCallback;
 import com.nikoskatsanos.bayleaf.client.netty.messagingpatterns.RRAPromise;
 import com.nikoskatsanos.bayleaf.client.netty.messagingpatterns.RRPromise;
 import com.nikoskatsanos.bayleaf.core.codec.StringCodec;
-import com.nikoskatsanos.bayleaf.core.message.ErrorMessage;
+import com.nikoskatsanos.bayleaf.domain.message.ErrorMessage;
 import java.io.File;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;

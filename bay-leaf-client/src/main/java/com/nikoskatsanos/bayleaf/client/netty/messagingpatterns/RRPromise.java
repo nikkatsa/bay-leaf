@@ -1,6 +1,6 @@
 package com.nikoskatsanos.bayleaf.client.netty.messagingpatterns;
 
-import com.nikoskatsanos.bayleaf.core.message.ErrorMessage;
+import com.nikoskatsanos.bayleaf.domain.message.ErrorMessage;
 
 public interface RRPromise<REQUEST, RESPONSE> {
 

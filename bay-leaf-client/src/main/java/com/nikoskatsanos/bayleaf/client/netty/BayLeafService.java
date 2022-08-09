@@ -3,9 +3,9 @@ package com.nikoskatsanos.bayleaf.client.netty;
 import com.nikoskatsanos.bayleaf.client.netty.messagingpatterns.StreamCallback;
 import com.nikoskatsanos.bayleaf.client.netty.messagingpatterns.RRAPromise;
 import com.nikoskatsanos.bayleaf.client.netty.messagingpatterns.RRPromise;
-import com.nikoskatsanos.bayleaf.core.Heartbeat;
+import com.nikoskatsanos.bayleaf.domain.message.Heartbeat;
 import com.nikoskatsanos.bayleaf.core.codec.BayLeafCodec;
-import com.nikoskatsanos.bayleaf.core.message.ErrorMessage;
+import com.nikoskatsanos.bayleaf.domain.message.ErrorMessage;
 import java.util.function.Consumer;
 
 public interface BayLeafService extends AutoCloseable {

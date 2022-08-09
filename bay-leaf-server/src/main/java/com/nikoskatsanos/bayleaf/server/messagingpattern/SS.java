@@ -6,7 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * An annotation to be used for {@link com.nikoskatsanos.bayleaf.core.Connector} methods that are shared stream endpoints
+ * An annotation to be used for {@link com.nikoskatsanos.bayleaf.server.Connector} methods that are shared stream endpoints
  */
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)

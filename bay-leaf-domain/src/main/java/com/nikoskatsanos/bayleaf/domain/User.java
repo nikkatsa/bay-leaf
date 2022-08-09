@@ -1,4 +1,4 @@
-package com.nikoskatsanos.bayleaf.core;
+package com.nikoskatsanos.bayleaf.domain;
 
 import java.security.Principal;
 import java.util.Collection;
@@ -9,6 +9,10 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * Bay-leaf user domain object. A user is identified by a {@code username} and a {@code userId}, which can be the same or not.
+ * Additionally a user can have a set of roles, for authorization
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

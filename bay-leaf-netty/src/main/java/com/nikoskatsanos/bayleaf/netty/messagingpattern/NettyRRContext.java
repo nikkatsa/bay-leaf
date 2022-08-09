@@ -1,12 +1,12 @@
 package com.nikoskatsanos.bayleaf.netty.messagingpattern;
 
-import com.nikoskatsanos.bayleaf.core.Session;
+import com.nikoskatsanos.bayleaf.domain.Session;
 import com.nikoskatsanos.bayleaf.core.codec.BayLeafCodec;
-import com.nikoskatsanos.bayleaf.core.message.ApplicationMessage;
-import com.nikoskatsanos.bayleaf.core.message.ErrorMessage;
-import com.nikoskatsanos.bayleaf.core.message.Message;
-import com.nikoskatsanos.bayleaf.core.message.MessageType;
-import com.nikoskatsanos.bayleaf.core.messagingpattern.MessagingPattern;
+import com.nikoskatsanos.bayleaf.domain.message.ApplicationMessage;
+import com.nikoskatsanos.bayleaf.domain.message.ErrorMessage;
+import com.nikoskatsanos.bayleaf.domain.message.Message;
+import com.nikoskatsanos.bayleaf.domain.message.MessageType;
+import com.nikoskatsanos.bayleaf.domain.message.MessagingPattern;
 import com.nikoskatsanos.bayleaf.server.messagingpattern.RRContext;
 import com.nikoskatsanos.bayleaf.server.messagingpattern.Request;
 import com.nikoskatsanos.bayleaf.server.messagingpattern.Response;

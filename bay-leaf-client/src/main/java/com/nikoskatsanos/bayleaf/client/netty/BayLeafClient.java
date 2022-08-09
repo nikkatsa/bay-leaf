@@ -4,8 +4,10 @@ import com.nikoskatsanos.bayleaf.client.SessionCallback;
 import com.nikoskatsanos.bayleaf.client.auth.ClientAuthTokenProvider;
 import com.nikoskatsanos.bayleaf.client.netty.handler.BayLeafApplicationMessageHandler;
 import com.nikoskatsanos.bayleaf.client.netty.handler.BayLeafClientSessionHandler;
+import com.nikoskatsanos.bayleaf.client.netty.props.BayLeafClientProps;
 import com.nikoskatsanos.bayleaf.core.codec.BayLeafCodec;
 import io.netty.bootstrap.Bootstrap;
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
@@ -29,6 +31,7 @@ import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.net.ssl.TrustManagerFactory;
 import lombok.RequiredArgsConstructor;
@@ -67,6 +70,13 @@ public class BayLeafClient implements AutoCloseable {
         this.sessionHandler.setOnSessionInitialized(v -> this.sessionInitializedFuture.complete(null));
         this.applicationMessageHandler = new BayLeafApplicationMessageHandler();
         this.eventLoop = new NioEventLoopGroup(1);
+
+        this.doStart();
+
+        return this.sessionInitializedFuture;
+    }
+
+    private void doStart() {
         final Bootstrap client = new Bootstrap()
             .channel(NioSocketChannel.class)
             .group(eventLoop)
@@ -98,9 +108,18 @@ public class BayLeafClient implements AutoCloseable {
                     pipeline.addLast(applicationMessageHandler);
                 }
             });
-        client.connect(new InetSocketAddress(this.host, this.port)).syncUninterruptibly();
-
-        return this.sessionInitializedFuture;
+        ChannelFuture connectFuture = client.connect(new InetSocketAddress(this.host, this.port));
+        connectFuture.addListener((ChannelFuture cf) -> {
+            if (cf.isDone() && cf.isSuccess()) {
+                cf.channel().closeFuture().addListener((ChannelFuture onClose) -> {
+                    logger.warn("Connection closed to Remote={}:{}. Reconnecting in {}ms", this.host, this.port, BayLeafClientProps.BAY_LEAF_CLIENT_RECONNECT_TIMEOUT_MS);
+                    this.eventLoop.schedule(this::doStart, BayLeafClientProps.BAY_LEAF_CLIENT_RECONNECT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+                });
+            } else {
+                logger.warn("Could not establish a connection with Remote={}:{}. Retrying in {}ms", this.host, this.port, BayLeafClientProps.BAY_LEAF_CLIENT_RECONNECT_TIMEOUT_MS);
+                this.eventLoop.schedule(this::doStart, BayLeafClientProps.BAY_LEAF_CLIENT_RECONNECT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+            }
+        });
     }
 
     public BayLeafServiceNettyImpl createService(final String serviceName, final BayLeafCodec.Serializer serializer, final BayLeafCodec.Deserializer deserializer) {

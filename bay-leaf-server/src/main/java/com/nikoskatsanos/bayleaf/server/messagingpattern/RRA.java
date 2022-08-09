@@ -7,7 +7,7 @@ import java.lang.annotation.Target;
 import java.util.concurrent.TimeUnit;
 
 /**
- * An annotation to be used for {@link com.nikoskatsanos.bayleaf.core.Connector} endpoints that are request-response-ack(client side ack)
+ * An annotation to be used for {@link com.nikoskatsanos.bayleaf.server.Connector} endpoints that are request-response-ack(client side ack)
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD})

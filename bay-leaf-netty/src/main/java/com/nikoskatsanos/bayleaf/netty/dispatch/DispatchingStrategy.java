@@ -1,7 +1,7 @@
 package com.nikoskatsanos.bayleaf.netty.dispatch;
 
-import com.nikoskatsanos.bayleaf.core.Session;
-import com.nikoskatsanos.bayleaf.core.User;
+import com.nikoskatsanos.bayleaf.domain.Session;
+import com.nikoskatsanos.bayleaf.domain.User;
 import com.nikoskatsanos.bayleaf.core.util.BayLeafThreadFactory;
 import com.nikoskatsanos.bayleaf.core.util.OrderedExecutor;
 import java.util.Map;

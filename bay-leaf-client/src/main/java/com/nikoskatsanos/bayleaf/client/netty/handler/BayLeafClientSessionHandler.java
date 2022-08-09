@@ -3,26 +3,20 @@ package com.nikoskatsanos.bayleaf.client.netty.handler;
 import com.nikoskatsanos.bayleaf.client.SessionCallback;
 import com.nikoskatsanos.bayleaf.client.auth.ClientAuthTokenProvider;
 import com.nikoskatsanos.bayleaf.client.netty.BayLeafServiceNettyImpl;
-import com.nikoskatsanos.bayleaf.core.Heartbeat;
-import com.nikoskatsanos.bayleaf.core.auth.Tokens.UsernamePassword;
-import com.nikoskatsanos.bayleaf.core.message.ApplicationMessage;
-import com.nikoskatsanos.bayleaf.core.message.Message;
-import com.nikoskatsanos.bayleaf.core.message.MessageType;
-import com.nikoskatsanos.bayleaf.core.message.SessionMessage;
+import com.nikoskatsanos.bayleaf.domain.message.Heartbeat;
+import com.nikoskatsanos.bayleaf.domain.message.ApplicationMessage;
+import com.nikoskatsanos.bayleaf.domain.message.Message;
+import com.nikoskatsanos.bayleaf.domain.message.MessageType;
+import com.nikoskatsanos.bayleaf.domain.message.SessionMessage;
 import com.nikoskatsanos.bayleaf.netty.codec.NettyJsonCodec;
+import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketClientProtocolHandler;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.CyclicBarrier;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -30,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @RequiredArgsConstructor
 @Slf4j
+@Sharable
 public class BayLeafClientSessionHandler extends SimpleChannelInboundHandler<TextWebSocketFrame> {
 
     private static final NettyJsonCodec NETTY_JSON_CODEC = NettyJsonCodec.instance();
@@ -40,8 +35,6 @@ public class BayLeafClientSessionHandler extends SimpleChannelInboundHandler<Tex
     private Consumer<Void> onSessionInitialized;
 
     private volatile ChannelHandlerContext channelCtx;
-
-    private final CountDownLatch sessionInitializationLatch = new CountDownLatch(1);
 
     private final Map<String, BayLeafServiceNettyImpl> services = new ConcurrentHashMap<>();
 

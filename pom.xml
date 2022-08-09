@@ -15,6 +15,7 @@
         <module>bay-leaf-client</module>
         <module>bay-leaf-netty</module>
         <module>bay-leaf-example</module>
+        <module>bay-leaf-domain</module>
     </modules>
 
     <name>bay-leaf</name>
@@ -31,6 +32,8 @@
         <log4j2.version>2.16.0</log4j2.version>
         <lombok.version>1.18.20</lombok.version>
         <jackson.version>2.12.4</jackson.version>
+        <protobuf.version>3.11.4</protobuf.version>
+        <protobuf.protoc.version>3.11.4</protobuf.protoc.version>
 
         <!-- Test -->
         <junit.version>5.7.2</junit.version>
@@ -54,7 +57,12 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-
+            <!-- Protobuf -->
+            <dependency>
+                <groupId>com.google.protobuf</groupId>
+                <artifactId>protobuf-java</artifactId>
+                <version>${protobuf.version}</version>
+            </dependency>
 
             <!-- Util -->
             <dependency>
@@ -153,6 +161,13 @@
                 <plugin>
                     <artifactId>maven-project-info-reports-plugin</artifactId>
                     <version>3.0.0</version>
+                </plugin>
+
+                <!-- Protobuf Plugin -->
+                <plugin>
+                    <groupId>com.github.os72</groupId>
+                    <artifactId>protoc-jar-maven-plugin</artifactId>
+                    <version>${protobuf.protoc.version}</version>
                 </plugin>
             </plugins>
         </pluginManagement>

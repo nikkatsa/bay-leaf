@@ -9,7 +9,7 @@ import com.nikoskatsanos.bayleaf.client.netty.BayLeafServiceNettyImpl;
 import com.nikoskatsanos.bayleaf.client.netty.messagingpatterns.RRPromise;
 import com.nikoskatsanos.bayleaf.client.netty.messagingpatterns.StreamCallback;
 import com.nikoskatsanos.bayleaf.core.codec.JsonCodec;
-import com.nikoskatsanos.bayleaf.core.message.ErrorMessage;
+import com.nikoskatsanos.bayleaf.domain.message.ErrorMessage;
 import com.nikoskatsanos.bayleaf.netty.example.model.MarketDataRequest;
 import com.nikoskatsanos.bayleaf.netty.example.model.MarketDataResponse;
 import com.nikoskatsanos.bayleaf.netty.example.model.SecurityListRequest;

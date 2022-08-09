@@ -1,6 +1,6 @@
 package com.nikoskatsanos.bayleaf.core.auth;
 
-import com.nikoskatsanos.bayleaf.core.User;
+import com.nikoskatsanos.bayleaf.domain.User;
 import com.nikoskatsanos.bayleaf.core.auth.Tokens.UsernamePassword;
 import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;

@@ -1,9 +1,9 @@
 package com.nikoskatsanos.bayleaf.netty.messagingpattern;
 
 import com.nikoskatsanos.bayleaf.core.codec.BayLeafCodec;
-import com.nikoskatsanos.bayleaf.core.message.ApplicationMessage;
-import com.nikoskatsanos.bayleaf.core.message.MessageType;
-import com.nikoskatsanos.bayleaf.core.messagingpattern.MessagingPattern;
+import com.nikoskatsanos.bayleaf.domain.message.ApplicationMessage;
+import com.nikoskatsanos.bayleaf.domain.message.MessageType;
+import com.nikoskatsanos.bayleaf.domain.message.MessagingPattern;
 import com.nikoskatsanos.bayleaf.server.messagingpattern.BCContext;
 import com.nikoskatsanos.bayleaf.server.messagingpattern.Broadcast;
 import com.nikoskatsanos.bayleaf.netty.codec.NettyJsonCodec;
