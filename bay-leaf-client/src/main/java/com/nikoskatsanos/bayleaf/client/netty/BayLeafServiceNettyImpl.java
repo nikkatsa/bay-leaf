@@ -164,6 +164,15 @@ public class BayLeafServiceNettyImpl implements BayLeafService{
         psRoute.data(applicationMessage.getCorrelationId(), applicationMessage.getData());
     }
 
+    public void onPSDataClose(final ApplicationMessage applicationMessage) {
+        final PSNettyImpl psRoute = this.psRoutes.get(applicationMessage.getRoute());
+        if (Objects.isNull(psRoute)) {
+            logger.warn("[PS] Unexpected ApplicationMessage={}", applicationMessage);
+            return;
+        }
+        psRoute.remoteClose(applicationMessage.getCorrelationId());
+    }
+
     public void onSSInitialData(final ApplicationMessage applicationMessage) {
         final SSNettyImpl ssRoute = this.ssRoutes.get(applicationMessage.getRoute());
         if (Objects.isNull(ssRoute)) {
@@ -331,13 +340,23 @@ public class BayLeafServiceNettyImpl implements BayLeafService{
         public void close(final SUBSCRIPTION subscription) {
             final String correlationId = this.subscriptions.entrySet().stream().filter(e -> subscription.equals(e.getValue().getSubscription())).map(e -> e.getKey()).findFirst().orElse(null);
             if (Objects.isNull(correlationId)) {
-                logger.warn("Could not find action Subscription={}", subscription);
+                logger.warn("Could not find active Subscription={}", subscription);
                 return;
             }
             final SubscriptionAndStreamCallbackRecord<SUBSCRIPTION, INITIAL_DATA, DATA> subscriptionAndCallback = this.subscriptions.remove(correlationId);
             final byte[] bytes = serializer.serialize(subscriptionAndCallback.getSubscription(), this.subscriptionType);
             final ApplicationMessage closeMsg = new ApplicationMessage(correlationId, MessageType.DATA_CLOSE, serviceName, this.route, MessagingPattern.PS, bytes);
             channelCtx.writeAndFlush(new TextWebSocketFrame(NETTY_JSON_CODEC.serializeToString(closeMsg)));
+        }
+
+        @Override
+        public void remoteClose(final String correlationId) {
+            final SubscriptionAndStreamCallbackRecord<SUBSCRIPTION, INITIAL_DATA, DATA> subscription = this.subscriptions.get(correlationId);
+            if (Objects.isNull(subscription)) {
+                logger.warn("Received PS#close event for unknown SubscriptionId={}", correlationId);
+                return;
+            }
+            subscription.getStreamCallback().onClose();
         }
     }
 

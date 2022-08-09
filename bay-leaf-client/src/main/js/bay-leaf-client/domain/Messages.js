@@ -76,12 +76,26 @@ class RRAPromise extends RRPromise {
     }
 }
 
+class PSCallback {
+
+  /**
+  * @param {function} initialData function to be called when client receives initial data for the corresponding PS from the server
+  * @param {function} data function to be called when client receives data for the corresponding PS from the server
+  * @param {function} onServerClose function to be called when client receives a #close event, initiated by the server
+  */
+  constructor(initialData, data, onServerClose) {
+    this.initialData = initialData;
+    this.data = data;
+    this.onServerClose = onServerClose;
+  }
+}
+
 const MESSAGING_PATTERN = Object.freeze({
-    RR: 'RR',
+    RR:  'RR',
     RRA: 'RRA',
-    PS: 'PS',
-    SS: 'SS',
-    BC: 'BC',
+    PS:  'PS',
+    SS:  'SS',
+    BC:  'BC',
 });
 
-export { Message, ErrorMessage, ApplicationMessage, MESSAGING_PATTERN, RRPromise, RRAPromise };
+export { Message, ErrorMessage, ApplicationMessage, MESSAGING_PATTERN, RRPromise, RRAPromise, PSCallback };

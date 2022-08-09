@@ -25,6 +25,7 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import javax.net.ssl.SSLHandshakeException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -129,5 +130,14 @@ public class BayLeafServerSessionHandler extends SimpleChannelInboundHandler<Tex
                 }
             }
         }
+    }
+
+    @Override
+    public void exceptionCaught(final ChannelHandlerContext ctx, final Throwable cause) throws Exception {
+        if (cause.getCause() instanceof SSLHandshakeException) {
+            logger.warn("SSLHandskake Warning={}", cause.getCause().getMessage());
+            return;
+        }
+        super.exceptionCaught(ctx, cause);
     }
 }

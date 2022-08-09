@@ -152,6 +152,35 @@
       </v-card>
     </v-row>
 
+    <!-- PS Server Closes Stream -->
+    <v-row class="mt-8">
+      <v-card style="min-width: 100%">
+        <v-card-title>
+          PS Pattern (EchoService#echoStreamServerClose)
+          <v-icon :color="isEchoServiceHeartbeating ? 'red' : 'grey'">{{isEchoServiceHeartbeating ? "mdi-heart-pulse" : "mdi-heart-off"}}</v-icon>
+        </v-card-title>
+        <v-container fluid>
+          <v-row>
+            <v-col class="mt-4" style="max-width: 120px">
+              <v-label style="max-width: 100%">Subscription:</v-label>
+            </v-col>
+            <v-col>
+              <v-text-field v-model="psSubscriptionServerCloses" />
+            </v-col>
+            <v-col class="mt-4" style="max-width: 100px">
+              <v-label>Data:</v-label>
+            </v-col>
+            <v-col>
+              <v-text-field v-model="psDataServerCloses" />
+            </v-col>
+            <v-col>
+              <v-btn class="mr-2" @click="psSubscribeServerCloses">Sub</v-btn>
+            </v-col>
+          </v-row>
+        </v-container>
+      </v-card>
+    </v-row>
+
     <!-- SS -->
     <v-row class="mt-8">
       <v-card style="min-width: 100%">
@@ -205,7 +234,7 @@
 </template>
 
 <script>
-import { createClient, StringCodec } from "bay-leaf-client";
+import { createClient, StringCodec, PSCallback } from "bay-leaf-client";
 
 export default {
   name: "BayLeafExamples",
@@ -236,6 +265,9 @@ export default {
     psSubscription: "Sub",
     psSubscriptionIds : new Map(),
     psData: "",
+
+    psSubscriptionServerCloses: "SubServerCloses",
+    psDataServerCloses: "",
 
     ssSubscription: "A",
     ssSubscriptionIds: new Map(),
@@ -337,6 +369,17 @@ export default {
     },
     psDataCallback(psData) {
       this.psData = psData;
+    },
+    psSubscribeServerCloses() {
+      if(this.echoService) {
+        this.echoService.privateStream("echoStreamServerClose", this.psSubscription, new PSCallback(()=>{}, this.psDataServerClosesCallback, this.psOnServerClosed));
+      }
+    },
+    psDataServerClosesCallback(psData) {
+      this.psDataServerCloses = psData;
+    },
+    psOnServerClosed() {
+      this.psDataServerCloses = `Server Closed Stream!`;
     },
     ssSubscribe() {
       if(this.echoService) {

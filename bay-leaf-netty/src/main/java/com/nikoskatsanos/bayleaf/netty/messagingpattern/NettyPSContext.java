@@ -15,6 +15,7 @@ import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Consumer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -44,6 +45,8 @@ public class NettyPSContext<SUBSCRIPTION, INITIAL_DATA, DATA> implements PSConte
 
     private final List<Subscription<SUBSCRIPTION>> activePSSubscriptions = new ArrayList<>();
 
+    private static final byte[] EMPTY_PAYLOAD = new byte[0];
+
     @Override
     public Session session() {
         return this.session;
@@ -70,6 +73,10 @@ public class NettyPSContext<SUBSCRIPTION, INITIAL_DATA, DATA> implements PSConte
         this.closeConsumer = closeConsumer;
     }
 
+    /**
+     * Close operation initiated by the client
+     * @param appMsg received from the network
+     */
     public void close(final ApplicationMessage appMsg) {
         if (Objects.nonNull(this.closeConsumer)) {
             final SUBSCRIPTION subscriptionData = this.deserializer.deserialize(appMsg.getData(), this.subscriptionType);
@@ -95,6 +102,19 @@ public class NettyPSContext<SUBSCRIPTION, INITIAL_DATA, DATA> implements PSConte
     @Override
     public void data(final SubscriptionData<SUBSCRIPTION, DATA> subscriptionData) {
         this.sendData(subscriptionData, MessageType.DATA);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void close(final SubscriptionData<SUBSCRIPTION, DATA> subscriptionData) {
+        final ApplicationMessage applicationMessage = new ApplicationMessage(subscriptionData.getSubscription().getId(), MessageType.DATA_CLOSE, this.serviceName, this.route, MessagingPattern.PS, EMPTY_PAYLOAD);
+        final Optional<Subscription<SUBSCRIPTION>> subscription = this.activePSSubscriptions.stream().filter(sub -> sub.getId().equals(subscriptionData.getSubscription().getId())).findFirst();
+        if (subscription.isPresent()) {
+            this.activePSSubscriptions.remove(subscription.get());
+        }
+        this.channelContext.executor().execute(()-> this.channelContext.writeAndFlush(new TextWebSocketFrame(JSON_CODEC.serializeToString(applicationMessage))));
     }
 
     private void sendData(final SubscriptionData<SUBSCRIPTION, DATA> subscriptionData, final MessageType msgType) {

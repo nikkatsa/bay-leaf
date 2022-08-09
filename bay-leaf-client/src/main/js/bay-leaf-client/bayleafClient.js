@@ -120,6 +120,13 @@ class BayLeafClient {
               }
             }
             break;
+          case MessageType.DATA_CLOSE:
+            if(msg.messagingPattern === MESSAGING_PATTERN.PS) {
+              if(psStreams.has(msg.correlationId)) {
+                psStreams.get(msg.correlationId).onMessage(msg);
+              }
+            }
+            break;
           default:
               console.warn(`Unhandled MsgType=${msg.messageType}, Msg=${JSON.parse(msg)}`);
               break;
@@ -286,6 +293,14 @@ class Service {
             const psStreamData = this.codec.decode(msg.data);
             const callback = msg.messageType === MessageType.DATA ? this.psCallbacks.get(msg.correlationId).data : this.psCallbacks.get(msg.correlationId).initialData;
             callback(psStreamData);
+          } else if(msg.messageType === MessageType.DATA_CLOSE) {
+            const onServerCloseCallback = this.psCallbacks.get(msg.correlationId).onServerClose;
+            if(onServerCloseCallback) {
+              this.psCallbacks.delete(msg.correlationId);
+              onServerCloseCallback();
+            } else {
+              console.warn(`No #onServerClose callback provided for SubscriptionId=${msg.correlationId}`);
+            }
           }
         }
       break;

@@ -42,6 +42,7 @@ public class EchoServerClientExample {
             testRRA(echoService);
 
             testPS(echoService);
+            testPSServerCloses(echoService);
 
             testSS(echoService);
 
@@ -71,6 +72,11 @@ public class EchoServerClientExample {
             public void onData(final String data) {
                 logger.info("[SS] Subscription=SharedSubscription, Data={}", data);
             }
+
+            @Override
+            public void onClose() {
+                logger.info("[SS] Subscription=SharedSubscription, closed by the server");
+            }
         });
     }
 
@@ -91,6 +97,31 @@ public class EchoServerClientExample {
                     logger.warn("Closing PS Subscription=PSSUb");
                     echoPS.close("PSSub");
                 }
+            }
+
+            @Override
+            public void onClose() {
+                logger.info("[PS] Subscription=PSSub, closed by the server");
+            }
+        });
+    }
+
+    private static void testPSServerCloses(BayLeafServiceNettyImpl echoService) {
+        final PS<String, String, String> psEchoStreamService = echoService.createPS("echoStreamServerClose", String.class, String.class, String.class);
+        psEchoStreamService.subscribe("SUB", new StreamCallback<String, String, String>() {
+            @Override
+            public void onInitialData(final String initialData) {
+                logger.info("Service=echo, Route=echoStreamServerClose, InitialData={}", initialData);
+            }
+
+            @Override
+            public void onData(final String data) {
+                logger.info("Service=echo, Route=echoStreamServerClose, Data={}", data);
+            }
+
+            @Override
+            public void onClose() {
+                logger.warn("Server initiated #close. Service=echo, Route=echoStreamServerClose");
             }
         });
     }

@@ -84,6 +84,9 @@ public class BayLeafApplicationMessageHandler extends SimpleChannelInboundHandle
             case DATA:
                 bayLeafService.onPSData(msg);
                 break;
+            case DATA_CLOSE:
+                bayLeafService.onPSDataClose(msg);
+                break;
             default:
                 logger.warn("Unhandled PS message Service={}, Msg={}", bayLeafService.getServiceName(), msg);
         }

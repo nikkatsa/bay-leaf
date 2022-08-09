@@ -36,4 +36,10 @@ public interface PSContext<SUBSCRIPTION, INITIAL_DATA, DATA> {
      * @param subscriptionData to be send to the remote end
      */
     void data(final SubscriptionData<SUBSCRIPTION, DATA> subscriptionData);
+
+    /**
+     * Server initiated close action. Closing the private stream
+     * @param subscriptionData to be used for getting the private subscription's ID
+     */
+    void close(final SubscriptionData<SUBSCRIPTION, DATA> subscriptionData);
 }

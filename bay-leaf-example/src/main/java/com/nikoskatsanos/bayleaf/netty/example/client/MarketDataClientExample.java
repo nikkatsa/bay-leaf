@@ -65,7 +65,12 @@ public class MarketDataClientExample {
 
             @Override
             public void onData(final MarketDataResponse marketDataResponse) {
-                logger.info("[DATA] Ccy={}, MarketData={}",marketDataResponse.getSymbol(), marketDataResponse);
+                logger.info("[DATA] Ccy={}, MarketData={}", marketDataResponse.getSymbol(), marketDataResponse);
+            }
+
+            @Override
+            public void onClose() {
+                logger.info("[CLOSE]");
             }
         };
         final SS<MarketDataRequest, MarketDataResponse, MarketDataResponse> marketData = marketDataService.createSS("stream", MarketDataRequest.class, MarketDataResponse.class, MarketDataResponse.class);

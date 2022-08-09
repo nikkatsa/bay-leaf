@@ -12,7 +12,7 @@ import lombok.RequiredArgsConstructor;
 
 /**
  * The strategy on how to execute events that come from the network. Those events will be using Netty's epoll thread group and depending on the application's
- * semantics a different thread of dispatching those events to the application layer(business logic layer) might be needed.
+ * semantics a different thread for dispatching those events to the application layer(business logic layer) might be needed.
  */
 public interface DispatchingStrategy {
 

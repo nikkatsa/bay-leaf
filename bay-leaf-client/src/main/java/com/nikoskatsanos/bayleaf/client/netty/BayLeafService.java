@@ -112,7 +112,17 @@ public interface BayLeafService extends AutoCloseable {
 
         void data(final String correlationId, final byte[] data);
 
+        /**
+         * Client side initiated close action
+         * @param subscription to be closed
+         */
         void close(final SUBSCRIPTION subscription);
+
+        /**
+         * Called when the remote end(bay-leaf server) closes a subscription
+         * @param correlationId corresponding to an active subscription, which is being closed
+         */
+        void remoteClose(final String correlationId);
     }
 
     interface SS<SUBSCRIPTION, INITIAL_DATA, DATA> {

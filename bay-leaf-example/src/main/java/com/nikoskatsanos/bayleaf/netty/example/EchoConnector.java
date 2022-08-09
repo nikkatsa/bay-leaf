@@ -119,6 +119,18 @@ public class EchoConnector extends Connector {
         });
     }
 
+    @PS(name="echoStreamServerClose", subscriptionType = String.class, initialDataType = String.class, dataType = String.class)
+    public void echoStreamServerClose(final PSContext<String, String, String> psContext) {
+        psContext.onSubscription(sub -> {
+            logger.info("Subscription Route=echoStreamServerClose, Subscription={}, Session={}", sub, psContext.session());
+            psContext.data(new SubscriptionData<>(sub, "Server will be closing stream in 3secs"));
+
+            Executors.newScheduledThreadPool(0).schedule(() -> {
+                psContext.close(new SubscriptionData<>(sub, null));
+            }, 3_000, TimeUnit.MILLISECONDS);
+        });
+    }
+
     @SS(name = "echoShared", subscriptionType = String.class, initialDataType = String.class, dataType = String.class)
     public void sharedStream(final SSContext<String, String, String> ssContext) {
         ssContext.onSubscription(ssSub -> {
