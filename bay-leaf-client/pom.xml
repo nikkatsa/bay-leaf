@@ -21,11 +21,10 @@
     </properties>
 
     <dependencies>
-
         <!-- Bay-Leaf -->
         <dependency>
             <groupId>com.nikoskatsanos</groupId>
-            <artifactId>bay-leaf-netty</artifactId>
+            <artifactId>bay-leaf-netty-common</artifactId>
             <version>${project.version}</version>
         </dependency>
 

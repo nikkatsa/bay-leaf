@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <artifactId>bay-leaf</artifactId>
+    <groupId>com.nikoskatsanos</groupId>
+    <version>1.0-SNAPSHOT</version>
+  </parent>
+
+  <groupId>com.nikoskatsanos</groupId>
+  <artifactId>bay-leaf-netty-common</artifactId>
+  <name>bay-leaf-netty-common</name>
+  <description>Common classes utils that can be shared between bay-leaf-netty-server and bay-leaf-client modules</description>
+
+  <properties>
+  </properties>
+
+  <dependencies>
+    <!-- bay-leaf -->
+    <dependency>
+      <groupId>com.nikoskatsanos</groupId>
+      <artifactId>bay-leaf-core</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <!-- Netty -->
+    <dependency>
+      <groupId>io.netty</groupId>
+      <artifactId>netty-all</artifactId>
+    </dependency>
+  </dependencies>
+
+  <build>
+  </build>
+</project>

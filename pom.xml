@@ -10,12 +10,13 @@
     <version>1.0-SNAPSHOT</version>
 
     <modules>
+        <module>bay-leaf-domain</module>
         <module>bay-leaf-core</module>
         <module>bay-leaf-server</module>
-        <module>bay-leaf-client</module>
+        <module>bay-leaf-netty-common</module>
         <module>bay-leaf-netty</module>
+        <module>bay-leaf-client</module>
         <module>bay-leaf-example</module>
-        <module>bay-leaf-domain</module>
     </modules>
 
     <name>bay-leaf</name>
